@@ -239,7 +239,7 @@
             // --- 3. Force browser reflow & wait for paint ---
             void wrapper.offsetHeight; // IMPORTANT: forces reflow
 
-            await new Promise(resolve => setTimeout(resolve, 150)); // wait 150ms
+            await new Promise(resolve => setTimeout(resolve, 1500)); // wait 150ms
 
 
             // --- 4. Generate PDF ---
