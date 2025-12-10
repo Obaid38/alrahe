@@ -172,22 +172,37 @@
         function closeSuccess() { document.getElementById('success-modal').classList.add('hidden'); }
 
         // --- INVOICE GENERATION (THE FIX) ---
-        function generateInvoice(data) {
+        async function generateInvoice(data) {
+
             // 1. Populate Data
             document.getElementById('inv-client').innerText = data.client;
             document.getElementById('inv-id').innerText = data.id;
             document.getElementById('inv-date').innerText = new Date(data.date).toLocaleDateString();
-            
-            const tbody = document.getElementById('inv-items'); tbody.innerHTML = '';
-            let subtotal = 0; let shipping = 0;
+
+            const tbody = document.getElementById('inv-items');
+            tbody.innerHTML = '';
+
+            let subtotal = 0;
+            let shipping = 0;
 
             data.items.forEach(item => {
                 const setting = db.settings.find(s => s['Dress Name'] === item.dress);
                 const basePrice = setting ? setting.Price : item.unitPrice;
                 let itemTotal = basePrice * item.qty;
-                if(item.unitPrice > basePrice) { shipping += (item.unitPrice - basePrice) * item.qty; }
+
+                if (item.unitPrice > basePrice) {
+                    shipping += (item.unitPrice - basePrice) * item.qty;
+                }
+
                 subtotal += itemTotal;
-                tbody.innerHTML += `<tr class="border-b border-gray-100"><td class="py-2"><p class="font-bold text-black uppercase">${item.dress}</p></td><td class="py-2 text-center text-gray-500">${item.size}</td><td class="py-2 text-center text-gray-500">${item.qty}</td><td class="py-2 text-right font-mono">${itemTotal.toLocaleString()}</td></tr>`;
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-gray-100">
+                        <td class="py-2"><p class="font-bold text-black uppercase">${item.dress}</p></td>
+                        <td class="py-2 text-center text-gray-500">${item.size}</td>
+                        <td class="py-2 text-center text-gray-500">${item.qty}</td>
+                        <td class="py-2 text-right font-mono">${itemTotal.toLocaleString()}</td>
+                    </tr>`;
             });
 
             document.getElementById('inv-subtotal').innerText = subtotal.toLocaleString();
@@ -196,22 +211,35 @@
             document.getElementById('inv-advance').innerText = data.advance.toLocaleString();
             document.getElementById('inv-due').innerText = "PKR " + (data.due).toLocaleString();
 
-            // 2. MAKE VISIBLE TEMPORARILY & GENERATE
+            // 2. MAKE VISIBLE
             const element = document.getElementById('invoice-container');
-            
-            // Critical Fix: Overlay on top of everything
             element.style.display = 'block';
             element.style.position = 'fixed';
             element.style.top = '0';
             element.style.left = '0';
             element.style.zIndex = '9999';
 
-            const opt = { margin:0, filename: `Invoice_${data.id}_${data.client}.pdf`, image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2, scrollY:0}, jsPDF:{unit:'pt',format:'a4',orientation:'portrait'}};
-            
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.style.display = 'none'; // Hide after save
-            });
+            // FORCE BROWSER REFLOW
+            void element.offsetHeight;
+
+            // WAIT 100ms FOR PAINT
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // 3. GENERATE PDF
+            const opt = {
+                margin: 0,
+                filename: `Invoice_${data.id}_${data.client}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, scrollY: 0, useCORS: true },
+                jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }
+            };
+
+            await html2pdf().set(opt).from(element).save();
+
+            // 4. HIDE AGAIN
+            element.style.display = 'none';
         }
+
         function generateInvoiceFromModal() { generateInvoice(lastSavedOrder); }
         function currentInvoiceFromEdit() {
             const p=parseFloat(document.getElementById('edit-price').value), q=parseFloat(document.getElementById('edit-qty').value), t=p*q, a=parseFloat(document.getElementById('edit-adv').value);
