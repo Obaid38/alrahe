@@ -112,6 +112,18 @@
         <button onclick="switchTab('new')" id="nav-new" class="text-gray-400 flex flex-col items-center px-4 py-1"><i class="fa-solid fa-plus-circle text-lg mb-1"></i><span class="text-[9px] font-bold tracking-widest">NEW</span></button>
         <button onclick="switchTab('list')" id="nav-list" class="text-gray-400 flex flex-col items-center px-4 py-1"><i class="fa-solid fa-list text-lg mb-1"></i><span class="text-[9px] font-bold tracking-widest">ORDERS</span></button>
     </div>
+    <div id="invoice-wrapper" style="
+        display:none;
+        position:fixed;
+        inset:0;
+        width:100%;
+        height:100%;
+        overflow:auto;
+        background:white;
+        z-index:999999;
+    ">
+    </div>
+
 
     <div id="invoice-container">
         <div class="p-12 h-full flex flex-col justify-between text-black">
@@ -174,7 +186,7 @@
         // --- INVOICE GENERATION (THE FIX) ---
         async function generateInvoice(data) {
 
-            // 1. Populate Data
+            // --- 1. Populate invoice data ---
             document.getElementById('inv-client').innerText = data.client;
             document.getElementById('inv-id').innerText = data.id;
             document.getElementById('inv-date').innerText = new Date(data.date).toLocaleDateString();
@@ -198,7 +210,7 @@
 
                 tbody.innerHTML += `
                     <tr class="border-b border-gray-100">
-                        <td class="py-2"><p class="font-bold text-black uppercase">${item.dress}</p></td>
+                        <td class="py-2"><p class="font-bold uppercase text-black">${item.dress}</p></td>
                         <td class="py-2 text-center text-gray-500">${item.size}</td>
                         <td class="py-2 text-center text-gray-500">${item.qty}</td>
                         <td class="py-2 text-right font-mono">${itemTotal.toLocaleString()}</td>
@@ -209,36 +221,48 @@
             document.getElementById('inv-shipping').innerText = shipping.toLocaleString();
             document.getElementById('inv-total').innerText = "PKR " + (subtotal + shipping).toLocaleString();
             document.getElementById('inv-advance').innerText = data.advance.toLocaleString();
-            document.getElementById('inv-due').innerText = "PKR " + (data.due).toLocaleString();
+            document.getElementById('inv-due').innerText = "PKR " + data.due.toLocaleString();
 
-            // 2. MAKE VISIBLE
-            const element = document.getElementById('invoice-container');
-            element.style.display = 'block';
-            element.style.position = 'fixed';
-            element.style.top = '0';
-            element.style.left = '0';
-            element.style.zIndex = '9999';
 
-            // FORCE BROWSER REFLOW
-            void element.offsetHeight;
+            // --- 2. Prepare wrapper ---
+            const invoice = document.getElementById("invoice-container");
+            const wrapper = document.getElementById("invoice-wrapper");
 
-            // WAIT 100ms FOR PAINT
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Clear wrapper and inject invoice into it
+            wrapper.innerHTML = "";
+            wrapper.appendChild(invoice);
 
-            // 3. GENERATE PDF
-            const opt = {
+            wrapper.style.display = "block";    // full-screen container
+            invoice.style.display = "block";    // make invoice visible
+
+
+            // --- 3. Force browser reflow & wait for paint ---
+            void wrapper.offsetHeight; // IMPORTANT: forces reflow
+
+            await new Promise(resolve => setTimeout(resolve, 150)); // wait 150ms
+
+
+            // --- 4. Generate PDF ---
+            await html2pdf().set({
                 margin: 0,
                 filename: `Invoice_${data.id}_${data.client}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, scrollY: 0, useCORS: true },
-                jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }
-            };
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    scrollY: 0,
+                    windowWidth: invoice.scrollWidth    // ensures correct width
+                },
+                jsPDF: { unit: "pt", format: "a4", orientation: "portrait" }
+            }).from(invoice).save();
 
-            await html2pdf().set(opt).from(element).save();
 
-            // 4. HIDE AGAIN
-            element.style.display = 'none';
+            // --- 5. Restore original state ---
+            wrapper.style.display = "none";
+            document.body.appendChild(invoice);  // put invoice back
+            invoice.style.display = "none";
         }
+
 
         function generateInvoiceFromModal() { generateInvoice(lastSavedOrder); }
         function currentInvoiceFromEdit() {
