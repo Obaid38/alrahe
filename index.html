@@ -3,53 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alrahe Label Manager</title>
+    <title>Alrahe Label v1.1</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#F9F5EB">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        cream: '#F9F5EB',    // [cite: 25] Background
-                        gold: '#C4A574',     // [cite: 25] Accents
-                        brown: '#8B7355',    // [cite: 25] Primary
-                        tan: '#A0826D',      // [cite: 25] Secondary
-                        dark: '#3E2723'
-                    },
-                    fontFamily: {
-                        sans: ['Lato', 'sans-serif'],
-                        serif: ['Playfair Display', 'serif']
-                    }
+                    colors: { cream: '#F9F5EB', gold: '#C4A574', brown: '#8B7355', dark: '#3E2723' },
+                    fontFamily: { sans: ['Lato', 'sans-serif'], serif: ['Playfair Display', 'serif'] }
                 }
             }
         }
     </script>
     <style>
         body { background-color: #F9F5EB; }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        /* Custom Scrollbar for list */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #C4A574; border-radius: 4px; }
+        .table-row:nth-child(even) { background-color: #fcfbf7; }
+        .table-row:hover { background-color: #f3e9d8; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #C4A574; border-radius: 2px; }
     </style>
 </head>
 <body class="text-dark font-sans h-screen flex flex-col overflow-hidden">
 
-    <div class="bg-dark text-cream py-4 text-center shadow-md z-20 shrink-0">
+    <div class="bg-dark text-cream py-4 text-center shadow-md shrink-0">
         <h1 class="font-serif text-xl tracking-[0.2em] font-bold">ALRAHE LABEL</h1>
         <p class="text-[10px] uppercase text-gold tracking-widest mt-1">Order Management System</p>
     </div>
 
     <div id="main-container" class="flex-1 overflow-y-auto p-4 pb-24 relative">
         
-        <div id="view-dashboard" class="space-y-4 fade-in">
+        <div id="view-dashboard" class="space-y-4">
             <div class="grid grid-cols-2 gap-3">
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gold/20">
                     <p class="text-xs uppercase text-gray-400 font-bold">Total Sales</p>
@@ -59,562 +46,431 @@
                     <p class="text-xs uppercase text-gray-400 font-bold">Net Profit</p>
                     <h3 class="text-xl font-bold text-green-600" id="kpi-profit">Rs. 0</h3>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gold/20">
-                    <p class="text-xs uppercase text-gray-400 font-bold">Total Orders</p>
-                    <h3 class="text-lg font-bold text-dark" id="kpi-orders">0</h3>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gold/20">
-                    <p class="text-xs uppercase text-gray-400 font-bold">Expenses</p>
-                    <h3 class="text-lg font-bold text-red-500" id="kpi-expenses">Rs. 0</h3>
-                </div>
             </div>
-
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gold/20">
-                <h3 class="text-xs font-bold uppercase mb-4 text-gray-500">Items Sold by Dress</h3>
                 <canvas id="chart-items" height="200"></canvas>
             </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="openExpenseModal()" class="bg-white border border-brown text-brown py-3 rounded-lg font-bold text-xs uppercase shadow-sm">
-                    + Add Expense
-                </button>
-                <button onclick="switchTab('settings')" class="bg-white border border-gray-400 text-gray-600 py-3 rounded-lg font-bold text-xs uppercase shadow-sm">
-                    ⚙ Settings
-                </button>
-            </div>
+            <button onclick="document.getElementById('expense-modal').classList.remove('hidden')" class="w-full bg-white border border-brown text-brown py-3 rounded-lg font-bold text-xs uppercase shadow-sm">+ Add Expense</button>
         </div>
 
-        <div id="view-new" class="hidden space-y-4 fade-in">
+        <div id="view-new" class="hidden space-y-4">
+            <div class="flex justify-end">
+                <button onclick="openSettingsModal()" class="text-xs font-bold text-brown flex items-center gap-1 bg-white px-3 py-1 rounded-full shadow-sm border border-gold/30">
+                    <i class="fa-solid fa-tags"></i> Manage Prices
+                </button>
+            </div>
+
             <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-gold">
                 <h2 class="text-lg font-serif font-bold mb-4 text-brown border-b pb-2">New Order</h2>
-                
                 <form id="order-form" class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[10px] font-bold uppercase text-gray-400">Date</label>
-                            <input type="date" id="ord-date" required class="w-full p-2 border border-gray-200 rounded bg-cream focus:border-gold outline-none" onchange="refreshPrices()">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold uppercase text-gray-400">Client</label>
-                            <input type="text" id="ord-client" required placeholder="Name" class="w-full p-2 border border-gray-200 rounded bg-cream focus:border-gold outline-none">
-                        </div>
+                        <div><label class="text-[9px] font-bold uppercase text-gray-400">Date</label><input type="date" id="ord-date" class="w-full p-2 border rounded text-sm bg-cream"></div>
+                        <div><label class="text-[9px] font-bold uppercase text-gray-400">Client</label><input type="text" id="ord-client" placeholder="Name" class="w-full p-2 border rounded text-sm bg-cream"></div>
                     </div>
 
-                    <div id="items-container" class="space-y-3">
-                        </div>
+                    <div id="items-container" class="space-y-3"></div>
+                    <button type="button" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-gold/50 text-gold font-bold text-xs rounded">+ ADD DRESS</button>
 
-                    <button type="button" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-gold/50 text-gold font-bold text-xs rounded hover:bg-gold/10 transition">
-                        + ADD ANOTHER DRESS
-                    </button>
-
-                    <div class="bg-cream p-4 rounded-lg border border-gold/20 space-y-3">
-                        <div class="flex justify-between items-center border-b border-gray-200 pb-2">
-                            <span class="font-bold text-sm text-gray-500">Total Amount</span>
-                            <span class="font-bold text-lg text-brown" id="display-total">0</span>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold uppercase text-gray-400">Advance Payment</label>
-                            <input type="number" id="ord-advance" placeholder="0" class="w-full p-2 font-mono text-lg border border-gray-300 rounded focus:border-gold outline-none" oninput="calculateTotals()">
-                        </div>
-                        <div class="flex justify-between items-center pt-1">
-                            <span class="font-bold text-sm text-gray-500">Remaining</span>
-                            <span class="font-bold text-lg text-red-500" id="display-remaining">0</span>
-                        </div>
+                    <div class="bg-cream p-3 rounded space-y-2">
+                        <div class="flex justify-between font-bold text-sm text-gray-600"><span>Total</span><span id="display-total">0</span></div>
+                        <input type="number" id="ord-advance" placeholder="Advance Payment" class="w-full p-2 text-sm border rounded" oninput="calculateTotals()">
+                        <div class="flex justify-between font-bold text-sm text-red-500"><span>Remaining</span><span id="display-remaining">0</span></div>
                     </div>
 
-                    <button type="submit" id="btn-submit" class="w-full bg-brown text-white py-4 rounded-xl font-bold shadow-lg hover:bg-dark transition transform active:scale-95">
-                        SUBMIT ORDER
-                    </button>
+                    <button type="submit" id="btn-submit" class="w-full bg-brown text-white py-4 rounded-xl font-bold shadow-lg">SUBMIT ORDER</button>
                 </form>
             </div>
         </div>
 
-        <div id="view-list" class="hidden space-y-4 fade-in">
-            <div class="sticky top-0 bg-cream pt-1 pb-2 z-10 space-y-2">
-                <input type="text" id="search-input" placeholder="Search Client Name..." class="w-full p-3 rounded-full border border-gold/30 shadow-sm focus:ring-2 focus:ring-gold outline-none" onkeyup="renderOrders()">
-                <div class="flex gap-2">
-                    <select id="filter-status" onchange="renderOrders()" class="w-1/2 p-2 rounded border border-gray-200 text-xs bg-white">
-                        <option value="All">All Status</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Production">Production</option>
-                        <option value="Delivered">Delivered</option>
-                    </select>
-                    <select id="filter-dress" onchange="renderOrders()" class="w-1/2 p-2 rounded border border-gray-200 text-xs bg-white">
-                        <option value="All">All Dresses</option>
-                        <option value="Nur">Nur</option>
-                        <option value="Mehr">Mehr</option>
-                        <option value="Hala">Hala</option>
-                    </select>
-                </div>
+        <div id="view-list" class="hidden space-y-4">
+            <div class="sticky top-0 bg-cream pb-2 z-10 flex gap-2">
+                <input type="text" id="search-input" placeholder="Search..." class="w-2/3 p-2 rounded border text-sm" onkeyup="renderOrders()">
+                <select id="filter-status" class="w-1/3 p-2 rounded border text-xs" onchange="renderOrders()">
+                    <option value="All">All</option><option>Pending</option><option>Delivered</option>
+                </select>
             </div>
 
-            <div id="orders-list" class="space-y-3 pb-8">
-                </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                        <tr class="bg-dark text-cream text-[10px] uppercase tracking-wider">
+                            <th class="p-3 font-bold">ID</th>
+                            <th class="p-3 font-bold">Date</th>
+                            <th class="p-3 font-bold">Client</th>
+                            <th class="p-3 font-bold">Dress</th>
+                            <th class="p-3 font-bold text-right">Total</th>
+                            <th class="p-3 font-bold text-right">Due</th>
+                            <th class="p-3 font-bold text-center">Status</th>
+                            <th class="p-3 text-center"><i class="fa-solid fa-pen"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body" class="text-xs text-gray-700">
+                        </tbody>
+                </table>
+            </div>
         </div>
+    </div>
 
-        <div id="view-settings" class="hidden space-y-4 fade-in">
-            <h2 class="text-xl font-serif font-bold text-brown">Price & Profit Settings</h2>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gold/20">
-                <p class="text-xs text-gray-500 mb-4">Set base prices and profit margins for each dress type. Future orders will auto-fill these values.</p>
+    <div class="fixed bottom-0 w-full bg-white border-t flex justify-around py-2 pb-6 z-30 shadow-inner">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center px-4"><i class="fa-solid fa-chart-pie mb-1"></i><span class="text-[9px] font-bold">DASHBOARD</span></button>
+        <button onclick="switchTab('new')" id="nav-new" class="flex flex-col items-center px-4 text-gray-400"><i class="fa-solid fa-circle-plus mb-1"></i><span class="text-[9px] font-bold">NEW ORDER</span></button>
+        <button onclick="switchTab('list')" id="nav-list" class="flex flex-col items-center px-4 text-gray-400"><i class="fa-solid fa-list mb-1"></i><span class="text-[9px] font-bold">ORDERS</span></button>
+    </div>
+
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-xl p-5 shadow-2xl h-[80vh] flex flex-col">
+            <h3 class="font-bold text-lg mb-4 text-brown">Manage Dresses & Prices</h3>
+            <div id="settings-rows" class="flex-1 overflow-y-auto space-y-2 mb-4"></div>
+            <button onclick="addSettingRow()" class="text-xs text-gold font-bold mb-4">+ Add New Dress</button>
+            <div class="flex gap-2 shrink-0">
+                <button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="w-1/2 py-2 border rounded text-gray-500 font-bold">Close</button>
+                <button onclick="saveSettings()" class="w-1/2 bg-brown text-white py-2 rounded font-bold">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-xl p-5 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h3 class="font-bold text-lg mb-4 text-brown flex justify-between">
+                <span>Edit Order</span>
+                <span id="edit-id-disp" class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500"></span>
+            </h3>
+            <form id="edit-form" class="space-y-3">
+                <input type="hidden" id="edit-id">
+                <input type="hidden" id="edit-original-dress"> <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-[9px] font-bold uppercase text-gray-400">Date</label><input type="date" id="edit-date" class="w-full p-2 border rounded text-xs"></div>
+                    <div><label class="text-[9px] font-bold uppercase text-gray-400">Client</label><input type="text" id="edit-client" class="w-full p-2 border rounded text-xs"></div>
+                </div>
                 
-                <div id="settings-container" class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-[9px] font-bold uppercase text-gray-400">Dress</label>
+                        <select id="edit-dress" class="w-full p-2 border rounded text-xs dress-selector"></select>
                     </div>
+                    <div><label class="text-[9px] font-bold uppercase text-gray-400">Status</label>
+                        <select id="edit-status" class="w-full p-2 border rounded text-xs">
+                            <option>Pending</option><option>Production</option><option>Delivered</option><option>Cancelled</option>
+                        </select>
+                    </div>
+                </div>
 
-                <button onclick="saveSettings()" id="btn-save-settings" class="w-full mt-4 bg-brown text-white py-3 rounded-lg font-bold shadow">
-                    SAVE SETTINGS
-                </button>
-            </div>
-        </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div><label class="text-[9px] font-bold uppercase text-gray-400">Price</label><input type="number" id="edit-price" oninput="calcEdit()" class="w-full p-2 border rounded text-xs"></div>
+                    <div><label class="text-[9px] font-bold uppercase text-gray-400">Qty</label><input type="number" id="edit-qty" oninput="calcEdit()" class="w-full p-2 border rounded text-xs"></div>
+                    <div><label class="text-[9px] font-bold uppercase text-gray-400">Advance</label><input type="number" id="edit-advance" oninput="calcEdit()" class="w-full p-2 border rounded text-xs"></div>
+                </div>
 
-    </div>
+                <div class="bg-gray-50 p-2 rounded text-xs flex justify-between">
+                    <span class="font-bold text-gray-500">Total: <span id="edit-total">0</span></span>
+                    <span class="font-bold text-red-500">Remaining: <span id="edit-remaining">0</span></span>
+                </div>
 
-    <div class="fixed bottom-0 w-full bg-white border-t border-gold/20 flex justify-around py-2 pb-6 z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center text-brown px-4 py-1 rounded-lg transition">
-            <i class="fa-solid fa-chart-pie text-xl mb-1"></i>
-            <span class="text-[9px] font-bold uppercase tracking-wider">Dashboard</span>
-        </button>
-        <button onclick="switchTab('new')" id="nav-new" class="flex flex-col items-center text-gray-400 px-4 py-1 rounded-lg transition">
-            <i class="fa-solid fa-circle-plus text-xl mb-1"></i>
-            <span class="text-[9px] font-bold uppercase tracking-wider">New Order</span>
-        </button>
-        <button onclick="switchTab('list')" id="nav-list" class="flex flex-col items-center text-gray-400 px-4 py-1 rounded-lg transition">
-            <i class="fa-solid fa-list text-xl mb-1"></i>
-            <span class="text-[9px] font-bold uppercase tracking-wider">My Orders</span>
-        </button>
-    </div>
-
-    <div id="expense-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-xl p-6 shadow-2xl animate-scale-up">
-            <h3 class="font-bold text-lg mb-4 text-brown">Add New Expense</h3>
-            <input type="date" id="exp-date" class="w-full mb-3 p-2 border rounded">
-            <input type="text" id="exp-desc" placeholder="Description (e.g. Fabric)" class="w-full mb-3 p-2 border rounded">
-            <input type="number" id="exp-amount" placeholder="Amount (PKR)" class="w-full mb-4 p-2 border rounded">
-            <div class="flex gap-2">
-                <button onclick="document.getElementById('expense-modal').classList.add('hidden')" class="w-1/2 py-3 border rounded text-gray-500 font-bold">Cancel</button>
-                <button onclick="submitExpense()" class="w-1/2 bg-brown text-white py-3 rounded font-bold shadow">Add</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="edit-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-xl p-6 shadow-2xl">
-            <h3 class="font-bold text-lg mb-4 text-brown">Update Order</h3>
-            <input type="hidden" id="edit-id">
-            <input type="hidden" id="edit-dress">
-            
-            <p class="text-xs text-gray-500 mb-1 font-bold uppercase">Status</p>
-            <select id="edit-status" class="w-full mb-3 p-2 border rounded bg-white">
-                <option value="Pending">Pending</option>
-                <option value="Production">Production</option>
-                <option value="Stitching">Stitching</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Hold">Hold</option>
-                <option value="Cancelled">Cancelled</option>
-            </select>
-
-            <p class="text-xs text-gray-500 mb-1 font-bold uppercase">Remaining Amount</p>
-            <input type="number" id="edit-remaining" class="w-full mb-4 p-2 border rounded">
-            
-            <div class="flex gap-2">
-                <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="w-1/2 py-3 border rounded text-gray-500 font-bold">Cancel</button>
-                <button onclick="submitOrderUpdate()" class="w-1/2 bg-gold text-white py-3 rounded font-bold shadow">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast" class="fixed top-5 right-5 z-[60] hidden transition-all duration-300 transform translate-x-10">
-        <div class="bg-white border-l-4 border-green-500 shadow-xl rounded-r px-4 py-3 flex items-center gap-3 min-w-[200px]">
-            <i class="fa-solid fa-circle-check text-green-500"></i>
-            <div>
-                <p class="font-bold text-sm text-gray-800" id="toast-title">Success</p>
-                <p class="text-xs text-gray-500" id="toast-msg">Operation completed</p>
-            </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')" class="w-1/2 py-3 border rounded font-bold text-gray-500">Cancel</button>
+                    <button type="submit" class="w-1/2 bg-gold text-white py-3 rounded font-bold">Update</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // ⚠️ CONFIGURATION
-        // ==========================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbwfde7eBWLWjn9l93GpwrtoyHukR65GMejKiA_kSL2D0Erdz9zTnHU3M2lgeUwtrh0m/exec"; 
-
-        // Local State
-        let db = { orders: [], expenses: [], settings: [] };
-        let chartInstance = null;
-
-        // --- INITIALIZATION ---
-        window.onload = function() {
+        const API_URL = "YOUR_WEB_APP_URL_HERE"; // ⚠️ REPLACE
+        let db = { orders: [], settings: [], expenses: [] };
+        
+        // INIT
+        window.onload = () => {
             document.getElementById('ord-date').valueAsDate = new Date();
-            document.getElementById('exp-date').valueAsDate = new Date();
-            addItemRow(); // Add first item row by default
+            addItemRow();
             fetchData();
         };
 
-        // --- API HANDLERS ---
         async function fetchData() {
-            showToast("Syncing...", "Loading data", "info");
             try {
-                const res = await fetch(API_URL + "?action=getOrders"); // [cite: 49]
+                const res = await fetch(API_URL + "?action=getData");
                 const data = await res.json();
                 if(data.status === "success") {
                     db = data;
                     renderDashboard();
                     renderOrders();
-                    renderSettings();
+                    renderSettingsModal(); // Pre-populate settings
                 }
-            } catch(e) {
-                console.error(e);
-                showToast("Error", "Check internet connection", "error");
-            }
+            } catch(e) { alert("Connection Error"); }
         }
 
         async function postData(payload) {
-            return fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            }).then(r => r.json());
+            return fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(r => r.json());
         }
 
-        // --- NAVIGATION ---
         function switchTab(tab) {
-            ['dashboard', 'new', 'list', 'settings'].forEach(t => {
-                const el = document.getElementById(`view-${t}`);
-                if(el) el.classList.add('hidden');
-                
-                const nav = document.getElementById(`nav-${t}`);
-                if(nav) {
-                    nav.classList.remove('text-brown', 'bg-gold/10');
-                    nav.classList.add('text-gray-400');
-                }
+            ['dashboard', 'new', 'list'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).classList.remove('text-brown');
+                document.getElementById(`nav-${t}`).classList.add('text-gray-400');
             });
-
             document.getElementById(`view-${tab}`).classList.remove('hidden');
-            const activeNav = document.getElementById(`nav-${tab}`);
-            if(activeNav) {
-                activeNav.classList.remove('text-gray-400');
-                activeNav.classList.add('text-brown');
-            }
-            
-            if(tab === 'dashboard') renderDashboard();
+            document.getElementById(`nav-${tab}`).classList.add('text-brown');
+            document.getElementById(`nav-${tab}`).classList.remove('text-gray-400');
             if(tab === 'list') renderOrders();
         }
 
-        // --- NEW ORDER LOGIC (Multi-Item) [cite: 4, 10] ---
+        // --- 1. NEW ORDER ---
         function addItemRow() {
             const container = document.getElementById('items-container');
-            const index = container.children.length;
-            
+            // Generate options from DB Settings
+            let options = '<option value="" disabled selected>Select...</option>';
+            if(db.settings.length === 0) {
+                 ['Nur', 'Mehr', 'Hala'].forEach(d => options += `<option value="${d}">${d}</option>`);
+            } else {
+                db.settings.forEach(s => options += `<option value="${s['Dress Name']}">${s['Dress Name']}</option>`);
+            }
+
             const html = `
-                <div class="item-row bg-gray-50 p-3 rounded border border-gray-200 relative fade-in">
-                    ${index > 0 ? `<button onclick="this.parentElement.remove(); calculateTotals()" class="absolute top-2 right-2 text-red-400 text-xs"><i class="fa-solid fa-trash"></i></button>` : ''}
-                    <div class="flex gap-2 mb-2">
-                        <div class="w-2/3">
-                            <label class="text-[9px] font-bold uppercase text-gray-400">Dress</label>
-                            <select class="w-full p-2 border rounded text-sm item-dress" onchange="updateRowPrice(this)">
-                                <option value="" disabled selected>Select...</option>
-                                <option value="Nur">Nur</option>
-                                <option value="Mehr">Mehr</option>
-                                <option value="Hala">Hala</option>
-                            </select>
-                        </div>
-                        <div class="w-1/3">
-                            <label class="text-[9px] font-bold uppercase text-gray-400">Qty</label>
-                            <input type="number" value="1" min="1" class="w-full p-2 border rounded text-center text-sm item-qty" oninput="calculateTotals()">
-                        </div>
+                <div class="item-row bg-gray-50 p-2 rounded border border-gray-200 relative">
+                    <button onclick="this.parentElement.remove(); calculateTotals()" class="absolute top-1 right-1 text-red-400 text-[10px]"><i class="fa-solid fa-trash"></i></button>
+                    <div class="flex gap-2">
+                        <select class="w-2/3 p-2 border rounded text-xs item-dress" onchange="updateRowPrice(this)">${options}</select>
+                        <input type="number" value="1" class="w-1/3 p-2 border rounded text-xs text-center item-qty" oninput="calculateTotals()">
                     </div>
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="text-gray-500">Unit: <span class="item-price">0</span></span>
-                        <span class="font-bold text-brown">Total: <span class="item-total">0</span></span>
+                    <div class="flex justify-between mt-1 text-[10px]">
+                        <span>Unit: <span class="item-price">0</span></span>
+                        <span class="font-bold">Total: <span class="item-total">0</span></span>
                     </div>
-                </div>
-            `;
+                </div>`;
             container.insertAdjacentHTML('beforeend', html);
         }
 
-        function refreshPrices() {
-            // Re-check prices when date changes
-            document.querySelectorAll('.item-row select').forEach(select => updateRowPrice(select));
-        }
-
-        function updateRowPrice(selectElement) {
-            const dressName = selectElement.value;
-            const orderDate = new Date(document.getElementById('ord-date').value);
-            
-            // Find price from Settings 
-            // Logic: Find setting row where Dress Name matches.
-            // (Simpler v1 logic: Just take the first match or last match from settings array)
-            const setting = db.settings.find(s => s['Dress Name'] === dressName);
+        function updateRowPrice(select) {
+            const dress = select.value;
+            const setting = db.settings.find(s => s['Dress Name'] === dress);
             const price = setting ? setting.Price : 0;
-            
-            const row = selectElement.closest('.item-row');
-            row.querySelector('.item-price').innerText = price;
+            select.closest('.item-row').querySelector('.item-price').innerText = price;
             calculateTotals();
         }
 
         function calculateTotals() {
-            let grandTotal = 0;
+            let grand = 0;
             document.querySelectorAll('.item-row').forEach(row => {
-                const price = parseFloat(row.querySelector('.item-price').innerText) || 0;
-                const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
-                const total = price * qty;
-                row.querySelector('.item-total').innerText = total;
-                grandTotal += total;
+                const p = parseFloat(row.querySelector('.item-price').innerText) || 0;
+                const q = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const tot = p * q;
+                row.querySelector('.item-total').innerText = tot;
+                grand += tot;
             });
-
-            const advance = parseFloat(document.getElementById('ord-advance').value) || 0;
-            document.getElementById('display-total').innerText = grandTotal.toLocaleString();
-            document.getElementById('display-remaining').innerText = (grandTotal - advance).toLocaleString();
+            const adv = parseFloat(document.getElementById('ord-advance').value) || 0;
+            document.getElementById('display-total').innerText = grand.toLocaleString();
+            document.getElementById('display-remaining').innerText = (grand - adv).toLocaleString();
         }
 
         document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-            btn.disabled = true;
+            btn.innerHTML = 'Saving...'; btn.disabled = true;
 
-            const grandTotal = parseFloat(document.getElementById('display-total').innerText.replace(/,/g, ''));
-            const totalAdvance = parseFloat(document.getElementById('ord-advance').value) || 0;
+            const grand = parseFloat(document.getElementById('display-total').innerText.replace(/,/g,''));
+            const advTotal = parseFloat(document.getElementById('ord-advance').value) || 0;
             
-            if (grandTotal === 0) {
-                alert("Please add items.");
-                btn.disabled = false; btn.innerText = "SUBMIT ORDER";
-                return;
-            }
-
-            // Prepare Items with Proportional Advance 
             const items = [];
             document.querySelectorAll('.item-row').forEach(row => {
-                const dressName = row.querySelector('.item-dress').value;
                 const price = parseFloat(row.querySelector('.item-price').innerText);
                 const qty = parseFloat(row.querySelector('.item-qty').value);
-                const rowTotal = parseFloat(row.querySelector('.item-total').innerText);
-                
-                // Math: (Row Total / Grand Total) * Total Advance
-                const rowAdvance = (rowTotal / grandTotal) * totalAdvance;
+                const total = parseFloat(row.querySelector('.item-total').innerText);
+                const rowAdv = (total / grand) * advTotal; // Split advance
                 
                 items.push({
-                    dressName, 
-                    price, 
-                    quantity: qty, 
-                    total: rowTotal,
-                    advancePayment: rowAdvance,
-                    remaining: rowTotal - rowAdvance
+                    dressName: row.querySelector('.item-dress').value,
+                    price: price, quantity: qty, total: total,
+                    advancePayment: rowAdv, remaining: total - rowAdv
                 });
             });
 
-            const payload = {
-                type: "order", // [cite: 48]
-                date: document.getElementById('ord-date').value,
-                clientName: document.getElementById('ord-client').value,
-                items: items
-            };
+            const res = await postData({
+                type: "order", date: document.getElementById('ord-date').value,
+                clientName: document.getElementById('ord-client').value, items: items
+            });
 
-            const res = await postData(payload);
             if(res.status === "success") {
-                showToast("Order Saved!", `ID: ${res.orderId}`, "success");
-                e.target.reset();
-                document.getElementById('items-container').innerHTML = '';
-                addItemRow();
-                document.getElementById('display-total').innerText = "0";
-                document.getElementById('display-remaining').innerText = "0";
-                fetchData(); // Refresh data
-            } else {
-                showToast("Error", res.message, "error");
+                alert("Saved! ID: " + res.orderId);
+                e.target.reset(); document.getElementById('items-container').innerHTML = ''; addItemRow();
+                fetchData();
             }
-            btn.disabled = false; btn.innerText = "SUBMIT ORDER";
+            btn.innerHTML = 'SUBMIT ORDER'; btn.disabled = false;
         });
 
-        // --- DASHBOARD [cite: 21, 24, 25] ---
-        function renderDashboard() {
-            // Metrics
-            const totalSales = db.orders.reduce((sum, o) => sum + (o['Total Amount'] || 0), 0);
-            const totalExpenses = db.expenses.reduce((sum, e) => sum + (e['Amount'] || 0), 0);
-            // Net Profit Logic: (Profit Margin * Qty) - Expenses ? 
-            // Or Simple: Sales - Expenses? 
-            // Readme [cite: 24] says: (Profit from orders) - Expenses
-            // We need to calculate "Profit from orders" based on margins in settings.
-            
-            let grossProfit = 0;
-            db.orders.forEach(o => {
-                const setting = db.settings.find(s => s['Dress Name'] === o['Dress Name']);
-                const margin = setting ? setting['Profit Margin'] : 0;
-                grossProfit += (margin * (o['Quantity'] || 1));
-            });
-            const netProfit = grossProfit - totalExpenses;
-
-            document.getElementById('kpi-sales').innerText = "Rs. " + totalSales.toLocaleString();
-            document.getElementById('kpi-profit').innerText = "Rs. " + netProfit.toLocaleString();
-            document.getElementById('kpi-orders').innerText = new Set(db.orders.map(o => o['Order ID'])).size; // Unique Orders
-            document.getElementById('kpi-expenses').innerText = "Rs. " + totalExpenses.toLocaleString();
-
-            // Chart: Items Sold
-            const counts = { Nur: 0, Mehr: 0, Hala: 0 };
-            db.orders.forEach(o => {
-                if(counts[o['Dress Name']] !== undefined) counts[o['Dress Name']] += (o['Quantity'] || 0);
-            });
-
-            if(chartInstance) chartInstance.destroy();
-            const ctx = document.getElementById('chart-items').getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Nur', 'Mehr', 'Hala'],
-                    datasets: [{
-                        label: 'Units Sold',
-                        data: [counts.Nur, counts.Mehr, counts.Hala],
-                        backgroundColor: ['#C4A574', '#8B7355', '#A0826D'],
-                        borderRadius: 4
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: false } } }
-            });
-        }
-
-        // --- MY ORDERS LIST [cite: 14] ---
+        // --- 2. ORDERS TABLE ---
         function renderOrders() {
-            const container = document.getElementById('orders-list');
+            const tbody = document.getElementById('orders-table-body');
             const search = document.getElementById('search-input').value.toLowerCase();
-            const fStatus = document.getElementById('filter-status').value;
-            const fDress = document.getElementById('filter-dress').value;
-
-            container.innerHTML = '';
+            const filter = document.getElementById('filter-status').value;
+            tbody.innerHTML = '';
 
             const filtered = db.orders.filter(o => {
-                const matchesName = String(o['Client Name']).toLowerCase().includes(search);
-                const matchesStatus = fStatus === 'All' || o['Status'] === fStatus;
-                const matchesDress = fDress === 'All' || o['Dress Name'] === fDress;
-                return matchesName && matchesStatus && matchesDress;
+                const matchName = String(o['Client Name']).toLowerCase().includes(search);
+                const matchID = String(o['Order ID']).toLowerCase().includes(search);
+                const matchStatus = filter === 'All' || o.Status === filter;
+                return (matchName || matchID) && matchStatus;
             }).reverse();
 
             filtered.forEach(o => {
-                const dateStr = new Date(o['Date']).toLocaleDateString();
-                const statusColor = o['Status'] === 'Delivered' ? 'text-green-600 bg-green-50' : 
-                                    o['Status'] === 'Cancelled' ? 'text-red-600 bg-red-50' : 'text-gold bg-yellow-50';
+                const date = new Date(o.Date).toLocaleDateString();
+                const total = parseFloat(o['Total Amount']).toLocaleString();
+                const due = Math.round(parseFloat(o['Remaining Amount'])).toLocaleString();
+                
+                const tr = `
+                <tr class="table-row border-b border-gray-100">
+                    <td class="p-3 font-bold text-brown">${o['Order ID']}</td>
+                    <td class="p-3">${date}</td>
+                    <td class="p-3">${o['Client Name']}</td>
+                    <td class="p-3"><span class="bg-gray-100 px-2 py-1 rounded">${o['Dress Name']}</span></td>
+                    <td class="p-3 text-right text-gray-500">${total}</td>
+                    <td class="p-3 text-right font-bold text-red-500">${due}</td>
+                    <td class="p-3 text-center"><span class="text-[10px] uppercase font-bold px-2 py-1 rounded ${o.Status==='Delivered'?'bg-green-100 text-green-700':'bg-yellow-100 text-gold'}">${o.Status}</span></td>
+                    <td class="p-3 text-center cursor-pointer text-brown hover:text-gold" onclick='openEditModal(${JSON.stringify(o)})'><i class="fa-solid fa-pen-to-square"></i></td>
+                </tr>`;
+                tbody.insertAdjacentHTML('beforeend', tr);
+            });
+        }
 
+        // --- 3. EDIT MODAL ---
+        function openEditModal(o) {
+            document.getElementById('edit-modal').classList.remove('hidden');
+            document.getElementById('edit-id').value = o['Order ID'];
+            document.getElementById('edit-original-dress').value = o['Dress Name']; // Crucial for backend finding row
+            document.getElementById('edit-id-disp').innerText = o['Order ID'];
+            
+            // Fill Fields
+            const dateStr = new Date(o.Date).toISOString().split('T')[0];
+            document.getElementById('edit-date').value = dateStr;
+            document.getElementById('edit-client').value = o['Client Name'];
+            document.getElementById('edit-price').value = o['Unit Price'];
+            document.getElementById('edit-qty').value = o.Quantity;
+            document.getElementById('edit-advance').value = o['Advance Payment'];
+            document.getElementById('edit-status').value = o.Status;
+
+            // Populate Dress Dropdown in Edit Modal
+            const dressSelect = document.getElementById('edit-dress');
+            dressSelect.innerHTML = '';
+            db.settings.forEach(s => dressSelect.innerHTML += `<option>${s['Dress Name']}</option>`);
+            dressSelect.value = o['Dress Name']; // Set selected
+
+            calcEdit(); // Initial calc
+        }
+
+        function calcEdit() {
+            const p = parseFloat(document.getElementById('edit-price').value) || 0;
+            const q = parseFloat(document.getElementById('edit-qty').value) || 0;
+            const adv = parseFloat(document.getElementById('edit-advance').value) || 0;
+            const total = p * q;
+            document.getElementById('edit-total').innerText = total;
+            document.getElementById('edit-remaining').innerText = total - adv;
+        }
+
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                type: "updateFullOrder",
+                orderId: document.getElementById('edit-id').value,
+                originalDress: document.getElementById('edit-original-dress').value,
+                date: document.getElementById('edit-date').value,
+                client: document.getElementById('edit-client').value,
+                dress: document.getElementById('edit-dress').value,
+                status: document.getElementById('edit-status').value,
+                price: document.getElementById('edit-price').value,
+                qty: document.getElementById('edit-qty').value,
+                total: document.getElementById('edit-total').innerText,
+                advance: document.getElementById('edit-advance').value,
+                remaining: document.getElementById('edit-remaining').innerText
+            };
+            
+            const res = await postData(payload);
+            if(res.status === "success") {
+                alert("Order Updated");
+                document.getElementById('edit-modal').classList.add('hidden');
+                fetchData();
+            }
+        });
+
+        // --- 4. SETTINGS MODAL (Quick Prices) ---
+        function openSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            renderSettingsModal();
+        }
+
+        function renderSettingsModal() {
+            const container = document.getElementById('settings-rows');
+            container.innerHTML = '';
+            
+            // If empty, seed default
+            let list = db.settings.length ? db.settings : [{ 'Dress Name': 'Nur', Price: 0, 'Profit Margin': 0 }];
+
+            list.forEach(s => {
                 const html = `
-                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 rounded">${o['Order ID']}</span>
-                                <span class="text-[10px] text-gray-400">${dateStr}</span>
-                            </div>
-                            <h3 class="font-bold text-brown text-sm">${o['Client Name']}</h3>
-                            <p class="text-xs text-gray-500">${o['Dress Name']} (x${o['Quantity']})</p>
-                        </div>
-                        <div class="text-right">
-                            <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${statusColor}">${o['Status']}</span>
-                            <p class="text-xs font-bold text-gray-600 mt-1">Due: Rs. ${Math.round(o['Remaining Amount']).toLocaleString()}</p>
-                            <button onclick='openEditModal(${JSON.stringify(o)})' class="text-[10px] underline text-brown mt-1">Edit</button>
-                        </div>
-                    </div>
-                `;
+                <div class="setting-row bg-gray-50 p-2 rounded border flex gap-2 mb-2 items-center">
+                    <input type="text" class="w-1/3 p-2 border rounded text-xs font-bold set-name" value="${s['Dress Name']}" placeholder="Name">
+                    <input type="number" class="w-1/3 p-2 border rounded text-xs set-price" value="${s.Price}" placeholder="Price">
+                    <input type="number" class="w-1/3 p-2 border rounded text-xs set-profit" value="${s['Profit Margin']}" placeholder="Profit">
+                    <button onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-times"></i></button>
+                </div>`;
                 container.insertAdjacentHTML('beforeend', html);
             });
         }
 
-        // --- EXPENSES & UPDATES ---
-        function openExpenseModal() { document.getElementById('expense-modal').classList.remove('hidden'); }
-        async function submitExpense() {
-            const payload = {
-                type: "expense",
-                date: document.getElementById('exp-date').value,
-                description: document.getElementById('exp-desc').value,
-                amount: document.getElementById('exp-amount').value
-            };
-            const res = await postData(payload);
-            if(res.status === "success") {
-                showToast("Expense Added", "", "success");
-                document.getElementById('expense-modal').classList.add('hidden');
-                fetchData();
-            }
-        }
-
-        function openEditModal(order) {
-            document.getElementById('edit-id').value = order['Order ID'];
-            document.getElementById('edit-dress').value = order['Dress Name']; // Needed for compound key
-            document.getElementById('edit-status').value = order['Status'];
-            document.getElementById('edit-remaining').value = Math.round(order['Remaining Amount']);
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        async function submitOrderUpdate() {
-            const payload = {
-                type: "updateOrder",
-                orderId: document.getElementById('edit-id').value,
-                dressName: document.getElementById('edit-dress').value,
-                status: document.getElementById('edit-status').value,
-                remainingAmount: document.getElementById('edit-remaining').value
-            };
-            const res = await postData(payload);
-            if(res.status === "success") {
-                showToast("Order Updated", "", "success");
-                document.getElementById('edit-modal').classList.add('hidden');
-                fetchData();
-            }
-        }
-
-        // --- SETTINGS (Simplified for v1) ---
-        function renderSettings() {
-            const container = document.getElementById('settings-container');
-            container.innerHTML = '';
-            
-            // Default dresses if empty
-            const dresses = ['Nur', 'Mehr', 'Hala'];
-            
-            dresses.forEach(dress => {
-                const setting = db.settings.find(s => s['Dress Name'] === dress) || { Price: 0, 'Profit Margin': 0 };
-                
-                container.insertAdjacentHTML('beforeend', `
-                    <div class="setting-row bg-gray-50 p-3 rounded border border-gray-200">
-                        <p class="font-bold text-brown mb-2">${dress}</p>
-                        <input type="hidden" class="set-name" value="${dress}">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-[9px] uppercase font-bold text-gray-400">Price</label>
-                                <input type="number" class="w-full p-2 border rounded text-sm set-price" value="${setting.Price}">
-                            </div>
-                            <div>
-                                <label class="text-[9px] uppercase font-bold text-gray-400">Profit Margin</label>
-                                <input type="number" class="w-full p-2 border rounded text-sm set-profit" value="${setting['Profit Margin']}">
-                            </div>
-                        </div>
-                    </div>
-                `);
-            });
+        function addSettingRow() {
+            const html = `
+                <div class="setting-row bg-gray-50 p-2 rounded border flex gap-2 mb-2 items-center">
+                    <input type="text" class="w-1/3 p-2 border rounded text-xs font-bold set-name" placeholder="Name">
+                    <input type="number" class="w-1/3 p-2 border rounded text-xs set-price" placeholder="Price">
+                    <input type="number" class="w-1/3 p-2 border rounded text-xs set-profit" placeholder="Profit">
+                    <button onclick="this.parentElement.remove()" class="text-red-400"><i class="fa-solid fa-times"></i></button>
+                </div>`;
+            document.getElementById('settings-rows').insertAdjacentHTML('beforeend', html);
         }
 
         async function saveSettings() {
             const rows = [];
-            document.querySelectorAll('.setting-row').forEach(row => {
-                rows.push([
-                    row.querySelector('.set-name').value, // Dress Name
-                    row.querySelector('.set-price').value, // Price
-                    '', '', // Dates (Skipped for simple v1)
-                    row.querySelector('.set-profit').value, // Profit Margin
-                    '', '' // Dates
-                ]);
+            document.querySelectorAll('.setting-row').forEach(r => {
+                const name = r.querySelector('.set-name').value;
+                if(name) {
+                    rows.push([
+                        name, r.querySelector('.set-price').value, '', '', r.querySelector('.set-profit').value, '', ''
+                    ]);
+                }
             });
-
             const res = await postData({ type: "saveSettings", rows: rows });
             if(res.status === "success") {
-                showToast("Settings Saved", "Prices updated", "success");
+                alert("Prices Saved!");
+                document.getElementById('settings-modal').classList.add('hidden');
                 fetchData();
             }
         }
 
-        // --- UTILS ---
-        function showToast(title, msg, type) {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-title').innerText = title;
-            document.getElementById('toast-msg').innerText = msg;
+        // --- DASHBOARD RENDER ---
+        function renderDashboard() {
+            // Stats
+            const sales = db.orders.reduce((s,o)=>s+(o['Total Amount']||0),0);
+            const exp = db.expenses.reduce((s,e)=>s+(e.Amount||0),0);
             
-            t.classList.remove('hidden', 'translate-x-10');
-            setTimeout(() => {
-                t.classList.add('translate-x-10');
-                setTimeout(() => t.classList.add('hidden'), 300);
-            }, 3000);
-        }
+            // Profit Calc: Sum(Margin * Qty) - Expenses
+            let gross = 0;
+            db.orders.forEach(o => {
+                const s = db.settings.find(x => x['Dress Name'] === o['Dress Name']);
+                if(s) gross += (s['Profit Margin'] * o.Quantity);
+            });
+            const net = gross - exp;
 
+            document.getElementById('kpi-sales').innerText = "Rs. " + sales.toLocaleString();
+            document.getElementById('kpi-profit').innerText = "Rs. " + net.toLocaleString();
+
+            // Chart
+            const counts = {};
+            db.orders.forEach(o => { counts[o['Dress Name']] = (counts[o['Dress Name']]||0) + o.Quantity; });
+            
+            new Chart(document.getElementById('chart-items'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{ label: 'Units', data: Object.values(counts), backgroundColor: '#C4A574' }]
+                }
+            });
+        }
     </script>
 </body>
 </html>
