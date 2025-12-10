@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alrahe Label Manager</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#F9F5EB">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#F9F5EB',    // Main BG
+                        beige: '#E4DCCF',    // Inputs
+                        gold: '#C9A66B',     // Active/Highlight
+                        brown: '#5D4037',    // Text
+                        dark: '#3E2723'      // Deep Text
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Lato"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream text-brown font-sans min-h-screen pb-12">
+
+    <div class="bg-gradient-to-r from-brown to-dark text-cream py-6 shadow-lg text-center rounded-b-3xl mb-8">
+        <h1 class="font-serif text-3xl tracking-widest font-bold">ALRAHE LABEL</h1>
+        <p class="text-[10px] uppercase tracking-[0.4em] text-gold mt-1">Order Management</p>
+    </div>
+
+    <div class="max-w-md mx-auto px-6">
+        
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-beige relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gold"></div>
+
+            <form id="submit-form" class="space-y-5">
+
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Date</label>
+                    <input type="date" name="date" id="dateInput" required
+                        class="w-full mt-1 bg-beige/30 border border-beige rounded-lg px-4 py-3 text-dark focus:ring-2 focus:ring-gold focus:bg-white outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Client Name</label>
+                    <input type="text" name="client" required placeholder="Mrs. Khan"
+                        class="w-full mt-1 bg-beige/30 border border-beige rounded-lg px-4 py-3 text-dark focus:ring-2 focus:ring-gold focus:bg-white outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Dress / Article</label>
+                    <input type="text" name="dress" required placeholder="Hala, Mehr..."
+                        class="w-full mt-1 bg-beige/30 border border-beige rounded-lg px-4 py-3 text-dark focus:ring-2 focus:ring-gold focus:bg-white outline-none transition-all">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Price</label>
+                        <input type="number" name="price" id="price" required placeholder="0" oninput="calculate()"
+                            class="w-full mt-1 bg-beige/30 border border-beige rounded-lg px-4 py-3 text-dark font-mono focus:ring-2 focus:ring-gold focus:bg-white outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Advance</label>
+                        <input type="number" name="advance" id="advance" required placeholder="0" oninput="calculate()"
+                            class="w-full mt-1 bg-beige/30 border border-beige rounded-lg px-4 py-3 text-dark font-mono focus:ring-2 focus:ring-gold focus:bg-white outline-none">
+                    </div>
+                </div>
+
+                <div class="bg-cream border border-beige rounded-xl p-4 flex justify-between items-center">
+                    <span class="text-xs font-bold uppercase text-brown/60">Balance Due</span>
+                    <span id="remaining-txt" class="text-xl font-bold text-dark font-mono">Rs. 0</span>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Status</label>
+                    <div class="relative">
+                        <select name="status" class="w-full mt-1 bg-beige/30 border border-beige rounded-lg px-4 py-3 text-dark appearance-none focus:ring-2 focus:ring-gold outline-none">
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Hold">Hold</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <div class="absolute right-4 top-5 text-brown/50 pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn"
+                    class="w-full bg-brown text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-all hover:bg-dark flex justify-center items-center gap-2">
+                    <span>SAVE ORDER</span>
+                    <i class="fa-solid fa-check"></i>
+                </button>
+
+            </form>
+        </div>
+
+        <div id="toast" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all z-50 w-max">
+            <i class="fa-regular fa-circle-check text-gold"></i>
+            <div>
+                <p class="text-sm font-bold">Saved Successfully!</p>
+                <p id="order-id-display" class="text-xs text-green-200">ID: ...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ----------------------------------------------------
+        // ⚠️ PASTE YOUR NEW GOOGLE SCRIPT URL BELOW
+        // ----------------------------------------------------
+        const SCRIPT_URL = 'YOUR_WEB_APP_URL_HERE'; 
+
+        // 1. Set Date Default to Today
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        // 2. Real-time Calculation
+        function calculate() {
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const advance = parseFloat(document.getElementById('advance').value) || 0;
+            const remaining = price - advance;
+            
+            const el = document.getElementById('remaining-txt');
+            el.innerText = "Rs. " + remaining.toLocaleString();
+            
+            if(remaining < 0) el.classList.add('text-red-600');
+            else el.classList.remove('text-red-600');
+        }
+
+        // 3. Form Submission
+        const form = document.getElementById('submit-form');
+        const btn = document.getElementById('btn');
+        const toast = document.getElementById('toast');
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            
+            // Loading State
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> SAVING...';
+            btn.classList.add('opacity-70');
+
+            fetch(SCRIPT_URL, { method: 'POST', body: new FormData(form)})
+                .then(response => response.json())
+                .then(data => {
+                    if(data.result === 'success') {
+                        // Success State
+                        document.getElementById('order-id-display').innerText = "Order ID: " + data.orderId;
+                        showToast();
+                        form.reset();
+                        
+                        // Reset Defaults
+                        document.getElementById('dateInput').valueAsDate = new Date();
+                        document.getElementById('remaining-txt').innerText = "Rs. 0";
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                })
+                .catch(err => alert("Internet Error: " + err.message))
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>SAVE ORDER</span> <i class="fa-solid fa-check"></i>';
+                    btn.classList.remove('opacity-70');
+                });
+        });
+
+        function showToast() {
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
