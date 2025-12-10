@@ -8,6 +8,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#FFFFFF">
+    
+    <!-- PWA Icons - ADD YOUR LOGO FILES -->
+    <link rel="apple-touch-icon" href="logo-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="image.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="logo-512.png">
+    <link rel="manifest" href="manifest.json">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -23,18 +29,15 @@
         .card { background: white; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .btn-black { background-color: #000000; color: white; font-weight: 600; border-radius: 6px; }
         .btn-outline { background-color: white; border: 1px solid #E5E7EB; color: #374151; font-weight: 600; border-radius: 6px; }
+        .btn-danger { background-color: #EF4444; color: white; font-weight: 600; border-radius: 6px; }
         
         .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #E5E7EB; background: white; }
-        .excel-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 650px; }
+        .excel-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 700px; }
         .excel-table th { background: #000000; color: white; padding: 12px; text-align: left; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
         .excel-table td { border-bottom: 1px solid #F3F4F6; padding: 12px; color: #374151; white-space: nowrap; }
         .excel-table tr:nth-child(even) td { background: #FAFAFA; }
 
-        /* INVOICE TEMPLATE (Hidden Source) */
         #invoice-container { display: none; }
-
-        /* PDF WRAPPER (This was missing before!) */
-        /* Used to render the invoice cleanly off-screen before capture */
         #invoice-wrapper {
             position: fixed;
             top: 0;
@@ -43,7 +46,7 @@
             height: 100%;
             z-index: 99999;
             background: white;
-            display: none; /* Hidden by default */
+            display: none;
             justify-content: center;
             overflow: auto;
         }
@@ -115,7 +118,7 @@
             <div class="relative"><i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i><input type="text" id="search" placeholder="Search Client..." class="w-full pl-10 p-3 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-1 focus:ring-black" onkeyup="renderOrders()"></div>
             <div class="table-container shadow-sm">
                 <table class="excel-table">
-                    <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Dress</th><th>Qty</th><th>Size</th><th>Due</th><th>Status</th><th>Edit</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Dress</th><th>Qty</th><th>Size</th><th>Due</th><th>Status</th><th>Edit</th><th>Delete</th></tr></thead>
                     <tbody id="orders-tbody"></tbody>
                 </table>
             </div>
@@ -154,25 +157,29 @@
     <div id="success-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-lg p-6 text-center shadow-2xl"><i class="fa-solid fa-circle-check text-4xl text-black mb-4"></i><h3 class="font-bold text-lg mb-2">Order Saved!</h3><p class="text-sm text-gray-500 mb-6" id="success-msg"></p><div class="flex gap-3"><button onclick="closeSuccess()" class="w-1/2 btn-outline py-3 text-xs uppercase">Close</button><button onclick="generateInvoiceFromModal()" class="w-1/2 btn-black py-3 text-xs uppercase"><i class="fa-solid fa-download mr-2"></i> Invoice</button></div></div></div>
     
     <div id="expense-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-lg p-6 shadow-2xl"><h3 class="font-bold mb-6 text-lg text-black">Add Expense</h3><input type="date" id="exp-date" class="w-full mb-3 p-3 border rounded bg-gray-50"><input type="text" id="exp-desc" placeholder="Description" class="w-full mb-3 p-3 border rounded bg-gray-50"><input type="number" id="exp-amount" placeholder="Amount" class="w-full mb-6 p-3 border rounded bg-gray-50"><div class="flex gap-3"><button onclick="document.getElementById('expense-modal').classList.add('hidden')" class="w-1/2 btn-outline py-3">Cancel</button><button onclick="saveExpense()" class="w-1/2 btn-black py-3">Save</button></div></div></div>
+    
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-lg p-6 h-[70vh] flex flex-col shadow-2xl"><h3 class="font-bold mb-4 text-lg text-black">Price Settings</h3><div id="settings-list" class="flex-1 overflow-y-auto space-y-2 mb-4 pr-1"></div><button onclick="addSettingRow()" class="text-xs text-black font-bold mb-4 flex items-center gap-1 border border-gray-300 rounded px-3 py-2 w-max hover:bg-gray-50"><i class="fa-solid fa-plus"></i> Add Dress</button><div class="flex gap-3 shrink-0"><button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="w-1/2 btn-outline py-3">Close</button><button onclick="saveSettings()" class="w-1/2 btn-black py-3">Save All</button></div></div></div>
     
     <div id="edit-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-md rounded-lg p-6 overflow-y-auto max-h-[90vh] shadow-2xl"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg text-black">Edit Order</h3><span id="edit-id-disp" class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-mono"></span></div><input type="hidden" id="edit-id"><input type="hidden" id="edit-old-dress"><form id="edit-form" class="space-y-3"><div class="grid grid-cols-2 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Date</label><input id="edit-date" type="date" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Client</label><input id="edit-client" type="text" class="w-full p-2 border rounded text-sm"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Dress</label><select id="edit-dress" class="w-full p-2 border rounded text-sm bg-white"></select></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Size</label><select id="edit-size" class="w-full p-2 border rounded text-sm bg-white"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>Custom</option></select></div></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Status</label><select id="edit-status" class="w-full p-2 border rounded text-sm bg-white"><option>Pending</option><option>Production</option><option>Delivered</option><option>Cancelled</option></select></div><div class="grid grid-cols-3 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Price</label><input id="edit-price" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Qty</label><input id="edit-qty" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Advance</label><input id="edit-adv" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Shipping Cost</label><input id="edit-shipping" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div><div class="flex justify-between font-bold bg-gray-50 p-3 rounded text-sm border border-gray-200 mt-2"><span class="text-gray-600">Total: <span id="edit-total">0</span></span><span class="text-black">Due: <span id="edit-due">0</span></span></div><div class="flex gap-3 mt-6"><button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')" class="w-1/3 btn-outline py-3">Cancel</button><button type="button" onclick="currentInvoiceFromEdit()" class="w-1/3 btn-outline py-3"><i class="fa-solid fa-download"></i> PDF</button><button type="button" onclick="saveEdit()" class="w-1/3 btn-black py-3">Update</button></div></form></div></div>
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div id="delete-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-lg p-6 text-center shadow-2xl"><i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-4"></i><h3 class="font-bold text-lg mb-2">Delete Order?</h3><p class="text-sm text-gray-500 mb-2">Order: <span id="delete-order-id" class="font-mono font-bold text-black"></span></p><p class="text-sm text-gray-500 mb-6">This action cannot be undone.</p><div class="flex gap-3"><button onclick="closeDeleteModal()" class="w-1/2 btn-outline py-3 text-xs uppercase">Cancel</button><button onclick="confirmDelete()" class="w-1/2 btn-danger py-3 text-xs uppercase"><i class="fa-solid fa-trash mr-2"></i> Delete</button></div></div></div>
+
     <div id="toast" class="hidden fixed top-6 right-6 z-[70] bg-black text-white px-6 py-4 rounded shadow-2xl flex items-center gap-4 transition-all transform translate-y-0"><i class="fa-solid fa-circle-check text-white text-xl"></i><div><h4 class="font-bold text-sm">Success</h4><span id="toast-msg" class="text-xs text-gray-300">Action saved</span></div></div>
 
     <script>
-        // ⚠️ PASTE YOUR URL HERE
         const API_URL = "https://script.google.com/macros/s/AKfycbwfde7eBWLWjn9l93GpwrtoyHukR65GMejKiA_kSL2D0Erdz9zTnHU3M2lgeUwtrh0m/exec"; 
         
         let db = { orders: [], expenses: [], settings: [] };
         let charts = { items: null, trend: null, finance: null };
         let lastSavedOrder = null;
+        let deleteOrderId = null;
         
         window.onload = () => { document.getElementById('ord-date').valueAsDate = new Date(); document.getElementById('exp-date').valueAsDate = new Date(); addItemRow(); fetchData(); };
         async function fetchData() { try { const r = await fetch(API_URL + "?action=getData"); const d = await r.json(); if(d.status === "success") { db = d; renderDashboard(); renderOrders(); } } catch(e){} }
         async function postData(p) { return fetch(API_URL, { method: "POST", body: JSON.stringify(p) }).then(r => r.json()); }
         function switchTab(t) { ['dashboard','new','list'].forEach(x => { document.getElementById(`view-${x}`).classList.add('hidden'); document.getElementById(`nav-${x}`).classList.remove('nav-active','text-black'); document.getElementById(`nav-${x}`).classList.add('text-gray-400'); }); document.getElementById(`view-${t}`).classList.remove('hidden'); document.getElementById(`nav-${t}`).classList.add('nav-active','text-black'); document.getElementById(`nav-${t}`).classList.remove('text-gray-400'); if(t==='list') renderOrders(); if(t==='dashboard') renderDashboard(); }
 
-        // --- NEW ORDER ---
         function addItemRow() {
             const container = document.getElementById('items-list');
             const defaultDresses = ['Nur', 'Mehr', 'Hala'];
@@ -216,7 +223,6 @@
                 const p=parseFloat(r.querySelector('.item-price').innerText); 
                 const q=parseFloat(r.querySelector('.item-qty').value); 
                 const t=parseFloat(r.querySelector('.item-total').innerText); 
-                // Split Advance & Shipping proportionally
                 const ratio = itemTotal > 0 ? (t / itemTotal) : 0;
                 const rowShip = ship * ratio; 
                 const rowAdv = adv * ratio;
@@ -242,7 +248,6 @@
         });
         function closeSuccess() { document.getElementById('success-modal').classList.add('hidden'); }
 
-        // --- INVOICE GENERATION (CLONE FIX) ---
         async function generateInvoice(data) {
             try {
                 document.getElementById('inv-client').innerText = data.client;
@@ -260,9 +265,7 @@
                     tbody.innerHTML += `<tr class="border-b border-gray-100"><td class="py-2"><p class="font-bold uppercase text-black">${item.dress}</p></td><td class="py-2 text-center text-gray-500">${item.size}</td><td class="py-2 text-center text-gray-500">${item.qty}</td><td class="py-2 text-right font-mono">${itemTotal.toLocaleString()}</td></tr>`;
                 });
 
-                // Explicit Shipping from data object
                 let shipping = (data.shipping !== undefined) ? parseFloat(data.shipping) : 0;
-                
                 const finalTotal = subtotal + shipping;
 
                 document.getElementById('inv-subtotal').innerText = subtotal.toLocaleString();
@@ -271,16 +274,14 @@
                 document.getElementById('inv-advance').innerText = data.advance.toLocaleString();
                 document.getElementById('inv-due').innerText = "PKR " + (finalTotal - data.advance).toLocaleString();
 
-                // CLONE & RENDER
                 const original = document.getElementById("invoice-container");
                 const clone = original.cloneNode(true);
                 const wrapper = document.getElementById("invoice-wrapper");
                 wrapper.innerHTML = "";
                 wrapper.appendChild(clone);
-                wrapper.style.display = "flex"; // Changed to flex for centering
+                wrapper.style.display = "flex";
                 clone.style.display = "block";
 
-                // Wait for render
                 await new Promise(res => setTimeout(res, 300)); 
 
                 const opt = { 
@@ -309,47 +310,241 @@
             generateInvoice(d);
         }
 
-        // --- DASHBOARD ---
         function renderDashboard(){ 
-            const f=document.getElementById('time-filter').value; const n=new Date(); let sd=new Date('2000-01-01'); if(f==='month')sd=new Date(n.getFullYear(),n.getMonth(),1); if(f==='year')sd=new Date(n.getFullYear(),0,1); if(f==='4months'){sd=new Date();sd.setMonth(n.getMonth()-4);} 
-            const fo=db.orders.filter(o=>new Date(o.Date)>=sd); const fe=db.expenses.filter(e=>new Date(e.Date)>=sd); const ts=fo.reduce((s,o)=>s+(o['Total Amount']||0),0); const te=fe.reduce((s,e)=>s+(e.Amount||0),0); 
-            let gp=0; fo.forEach(o=>{const s=db.settings.find(x=>x['Dress Name']===o['Dress Name']);if(s)gp+=(s['Profit Margin']*o.Quantity);}); const np=gp-te; 
-            document.getElementById('kpi-sales').innerText=ts.toLocaleString(); document.getElementById('kpi-expenses').innerText=te.toLocaleString(); document.getElementById('kpi-profit').innerText=np.toLocaleString(); 
-            const ic={}; fo.forEach(o=>ic[o['Dress Name']]=(ic[o['Dress Name']]||0)+o.Quantity); updateChart('items','bar',Object.keys(ic),Object.values(ic),'#000000','Units'); 
-            const ms={}; fo.forEach(o=>{const d=new Date(o.Date).toLocaleString('default',{month:'short'});ms[d]=(ms[d]||0)+o['Total Amount']}); updateChart('trend','line',Object.keys(ms),Object.values(ms),'#000000','Sales'); 
+            const f=document.getElementById('time-filter').value; const n=new Date(); let sd=new Date('2000-01-01'); 
+            if(f==='month')sd=new Date(n.getFullYear(),n.getMonth(),1); 
+            if(f==='year')sd=new Date(n.getFullYear(),0,1); 
+            if(f==='4months'){sd=new Date();sd.setMonth(n.getMonth()-4);} 
+            
+            const fo=db.orders.filter(o=>new Date(o.Date)>=sd); 
+            const fe=db.expenses.filter(e=>new Date(e.Date)>=sd); 
+            const ts=fo.reduce((s,o)=>s+(o['Total Amount']||0),0); 
+            const te=fe.reduce((s,e)=>s+(e.Amount||0),0); 
+            
+            let gp=0; 
+            fo.forEach(o=>{
+                const s=db.settings.find(x=>x['Dress Name']===o['Dress Name']);
+                if(s)gp+=(s['Profit Margin']*o.Quantity);
+            }); 
+            
+            // FIX: Prevent negative profit display
+            const np = Math.max(0, gp - te); 
+            
+            document.getElementById('kpi-sales').innerText=ts.toLocaleString(); 
+            document.getElementById('kpi-expenses').innerText=te.toLocaleString(); 
+            document.getElementById('kpi-profit').innerText=np.toLocaleString(); 
+            
+            // FIX: Handle empty data for charts
+            const ic={}; 
+            fo.forEach(o=>ic[o['Dress Name']]=(ic[o['Dress Name']]||0)+o.Quantity); 
+            const itemLabels = Object.keys(ic);
+            const itemData = Object.values(ic);
+            if(itemLabels.length > 0) {
+                updateChart('items','bar',itemLabels,itemData,'#000000','Units'); 
+            } else {
+                updateChart('items','bar',['No Data'],[0],'#E5E7EB','Units');
+            }
+            
+            const ms={}; 
+            fo.forEach(o=>{
+                const d=new Date(o.Date).toLocaleString('default',{month:'short'});
+                ms[d]=(ms[d]||0)+o['Total Amount']
+            }); 
+            const trendLabels = Object.keys(ms);
+            const trendData = Object.values(ms);
+            if(trendLabels.length > 0) {
+                updateChart('trend','line',trendLabels,trendData,'#000000','Sales'); 
+            } else {
+                updateChart('trend','line',['No Data'],[0],'#E5E7EB','Sales');
+            }
+            
+            // FIX: Use the corrected np value
             updateChart('finance','bar',['Expenses','Profit'],[te,np],['#9CA3AF','#000000'],'PKR'); 
         }
-        function updateChart(id,type,l,d,c,lb){ if(charts[id])charts[id].destroy(); const ctx=document.getElementById('chart-'+id).getContext('2d'); charts[id]=new Chart(ctx,{type:type,data:{labels:l,datasets:[{label:lb,data:d,backgroundColor:c,borderColor:c,borderWidth:1.5,borderRadius:4,fill:false,tension:type==='line'?0.4:0,pointBackgroundColor:'#FFF',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{display:false}},x:{grid:{display:false}}}}}); }
-
-        // --- TABLE, EDIT, SETTINGS ---
-        function renderOrders(){ const tb=document.getElementById('orders-tbody'); const s=document.getElementById('search').value.toLowerCase(); tb.innerHTML=''; db.orders.filter(o=>o['Client Name'].toLowerCase().includes(s)||o['Order ID'].toLowerCase().includes(s)).reverse().forEach(o=>{ const due=Math.round(o['Remaining Amount']); let bc='bg-gray-100 text-gray-600'; if(o.Status==='Delivered')bc='bg-black text-white'; if(o.Status==='Pending')bc='bg-gray-200 text-black'; if(o.Status==='Cancelled')bc='bg-red-50 text-red-600'; const tr=`<tr class="transition-colors hover:bg-gray-50"><td class="font-mono font-bold text-black">${o['Order ID']}</td><td>${new Date(o.Date).toLocaleDateString()}</td><td class="font-bold">${o['Client Name']}</td><td>${o['Dress Name']}</td><td>${o['Quantity']}</td><td><span class="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200 font-mono">${o.Size||'-'}</span></td><td class="font-mono font-bold ${due>0?'text-red-500':'text-green-600'}">${due}</td><td class="text-center"><span class="${bc} px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wide">${o.Status}</span></td><td class="text-center"><button onclick='openEdit(${JSON.stringify(o)})' class="text-gray-400 hover:text-black transition"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`; tb.insertAdjacentHTML('beforeend', tr); }); }
-        function openEdit(o){ 
-            document.getElementById('edit-modal').classList.remove('hidden'); document.getElementById('edit-id').value=o['Order ID']; document.getElementById('edit-old-dress').value=o['Dress Name']; document.getElementById('edit-id-disp').innerText=o['Order ID']; document.getElementById('edit-date').value=new Date(o.Date).toISOString().split('T')[0]; document.getElementById('edit-client').value=o['Client Name']; document.getElementById('edit-status').value=o.Status; document.getElementById('edit-size').value=o.Size||'S'; document.getElementById('edit-price').value=o['Unit Price']; document.getElementById('edit-qty').value=o.Quantity; document.getElementById('edit-adv').value=o['Advance Payment']; 
-            document.getElementById('edit-shipping').value=o['Shipping Cost']||0; // Populate Shipping
-            const ds=document.getElementById('edit-dress'); ds.innerHTML=''; const defs=new Set(['Nur','Mehr','Hala']); if(db.settings)db.settings.forEach(s=>defs.add(s['Dress Name'])); defs.forEach(d=>ds.innerHTML+=`<option>${d}</option>`); ds.value=o['Dress Name']; calcEdit(); 
+        
+        function updateChart(id,type,l,d,c,lb){ 
+            if(charts[id])charts[id].destroy(); 
+            const ctx=document.getElementById('chart-'+id).getContext('2d'); 
+            charts[id]=new Chart(ctx,{
+                type:type,
+                data:{
+                    labels:l,
+                    datasets:[{
+                        label:lb,
+                        data:d,
+                        backgroundColor:c,
+                        borderColor:c,
+                        borderWidth:1.5,
+                        borderRadius:4,
+                        fill:false,
+                        tension:type==='line'?0.4:0,
+                        pointBackgroundColor:'#FFF',
+                        pointBorderWidth:2
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    plugins:{legend:{display:false}},
+                    scales:{
+                        y:{beginAtZero:true,grid:{display:false}},
+                        x:{grid:{display:false}}
+                    }
+                }
+            }); 
         }
+
+        function renderOrders(){ 
+            const tb=document.getElementById('orders-tbody'); 
+            const s=document.getElementById('search').value.toLowerCase(); 
+            tb.innerHTML=''; 
+            db.orders.filter(o=>o['Client Name'].toLowerCase().includes(s)||o['Order ID'].toLowerCase().includes(s)).reverse().forEach(o=>{ 
+                const due=Math.round(o['Remaining Amount']); 
+                let bc='bg-gray-100 text-gray-600'; 
+                if(o.Status==='Delivered')bc='bg-black text-white'; 
+                if(o.Status==='Pending')bc='bg-gray-200 text-black'; 
+                if(o.Status==='Cancelled')bc='bg-red-50 text-red-600'; 
+                const tr=`<tr class="transition-colors hover:bg-gray-50">
+                    <td class="font-mono font-bold text-black">${o['Order ID']}</td>
+                    <td>${new Date(o.Date).toLocaleDateString()}</td>
+                    <td class="font-bold">${o['Client Name']}</td>
+                    <td>${o['Dress Name']}</td>
+                    <td>${o['Quantity']}</td>
+                    <td><span class="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200 font-mono">${o.Size||'-'}</span></td>
+                    <td class="font-mono font-bold ${due>0?'text-red-500':'text-green-600'}">${due}</td>
+                    <td class="text-center"><span class="${bc} px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wide">${o.Status}</span></td>
+                    <td class="text-center"><button onclick='openEdit(${JSON.stringify(o)})' class="text-gray-400 hover:text-black transition"><i class="fa-solid fa-pen-to-square"></i></button></td>
+                    <td class="text-center"><button onclick='openDeleteModal("${o['Order ID']}")' class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>`; 
+                tb.insertAdjacentHTML('beforeend', tr); 
+            }); 
+        }
+        
+        function openEdit(o){ 
+            document.getElementById('edit-modal').classList.remove('hidden'); 
+            document.getElementById('edit-id').value=o['Order ID']; 
+            document.getElementById('edit-old-dress').value=o['Dress Name']; 
+            document.getElementById('edit-id-disp').innerText=o['Order ID']; 
+            document.getElementById('edit-date').value=new Date(o.Date).toISOString().split('T')[0]; 
+            document.getElementById('edit-client').value=o['Client Name']; 
+            document.getElementById('edit-status').value=o.Status; 
+            document.getElementById('edit-size').value=o.Size||'S'; 
+            document.getElementById('edit-price').value=o['Unit Price']; 
+            document.getElementById('edit-qty').value=o.Quantity; 
+            document.getElementById('edit-adv').value=o['Advance Payment']; 
+            document.getElementById('edit-shipping').value=o['Shipping Cost']||0;
+            const ds=document.getElementById('edit-dress'); 
+            ds.innerHTML=''; 
+            const defs=new Set(['Nur','Mehr','Hala']); 
+            if(db.settings)db.settings.forEach(s=>defs.add(s['Dress Name'])); 
+            defs.forEach(d=>ds.innerHTML+=`<option>${d}</option>`); 
+            ds.value=o['Dress Name']; 
+            calcEdit(); 
+        }
+        
         function calcEdit(){ 
             const p=parseFloat(document.getElementById('edit-price').value)||0; 
             const q=parseFloat(document.getElementById('edit-qty').value)||0; 
             const s=parseFloat(document.getElementById('edit-shipping').value)||0;
             const a=parseFloat(document.getElementById('edit-adv').value)||0; 
-            const t = (p*q) + s; // Price*Qty + Shipping
+            const t = (p*q) + s;
             document.getElementById('edit-total').innerText=t; 
             document.getElementById('edit-due').innerText=t-a; 
         }
+        
         async function saveEdit(){ 
-            const p={type:'updateFull',id:document.getElementById('edit-id').value,oldDress:document.getElementById('edit-old-dress').value,date:document.getElementById('edit-date').value,client:document.getElementById('edit-client').value,dress:document.getElementById('edit-dress').value,size:document.getElementById('edit-size').value,status:document.getElementById('edit-status').value,price:document.getElementById('edit-price').value,qty:document.getElementById('edit-qty').value,
-            shipping:document.getElementById('edit-shipping').value, // Send Shipping
-            total:document.getElementById('edit-total').innerText,advance:document.getElementById('edit-adv').value,remaining:document.getElementById('edit-due').innerText}; 
-            const r=await postData(p); if(r.status==='success'){ showToast("Updated"); document.getElementById('edit-modal').classList.add('hidden'); fetchData(); } else { alert(r.msg); } 
+            const p={
+                type:'updateFull',
+                id:document.getElementById('edit-id').value,
+                oldDress:document.getElementById('edit-old-dress').value,
+                date:document.getElementById('edit-date').value,
+                client:document.getElementById('edit-client').value,
+                dress:document.getElementById('edit-dress').value,
+                size:document.getElementById('edit-size').value,
+                status:document.getElementById('edit-status').value,
+                price:document.getElementById('edit-price').value,
+                qty:document.getElementById('edit-qty').value,
+                shipping:document.getElementById('edit-shipping').value,
+                total:document.getElementById('edit-total').innerText,
+                advance:document.getElementById('edit-adv').value,
+                remaining:document.getElementById('edit-due').innerText
+            }; 
+            const r=await postData(p); 
+            if(r.status==='success'){ 
+                showToast("Order Updated"); 
+                document.getElementById('edit-modal').classList.add('hidden'); 
+                fetchData(); 
+            } else { 
+                alert(r.msg); 
+            } 
         }
         
-        // --- HELPERS ---
-        function openSettings(){ document.getElementById('settings-modal').classList.remove('hidden'); const l=document.getElementById('settings-list'); l.innerHTML=''; (db.settings.length?db.settings:[{'Dress Name':'',Price:0,'Profit Margin':0}]).forEach(s=>addSettingRow(s['Dress Name'],s.Price,s['Profit Margin'])); }
-        function addSettingRow(n='',p='',m=''){ const h=`<div class="flex gap-2 items-center s-row bg-gray-50 p-2 rounded mb-2 border border-gray-100"><input class="w-1/3 p-2 border rounded text-xs s-name bg-white" placeholder="Name" value="${n}"><input class="w-1/3 p-2 border rounded text-xs s-price bg-white" type="number" placeholder="Price" value="${p}"><input class="w-1/3 p-2 border rounded text-xs s-profit" type="number" placeholder="Profit" value="${m}"><button onclick="this.parentElement.remove()" class="text-gray-300 hover:text-black"><i class="fa-solid fa-times"></i></button></div>`; document.getElementById('settings-list').insertAdjacentHTML('beforeend',h); }
-        async function saveSettings(){ const r=[]; document.querySelectorAll('.s-row').forEach(x=>{ if(x.querySelector('.s-name').value) r.push([x.querySelector('.s-name').value, x.querySelector('.s-price').value, '','',x.querySelector('.s-profit').value,'','']) }); await postData({type:'savePrices', rows:r}); showToast("Prices Saved"); document.getElementById('settings-modal').classList.add('hidden'); fetchData(); }
-        async function saveExpense(){ await postData({type:"addExpense", date:document.getElementById('exp-date').value, desc:document.getElementById('exp-desc').value, amount:document.getElementById('exp-amount').value}); showToast("Expense Added"); document.getElementById('expense-modal').classList.add('hidden'); fetchData(); }
-        function showToast(m) { const t=document.getElementById('toast'); document.getElementById('toast-msg').innerText=m; t.classList.remove('hidden','translate-y-0'); setTimeout(() => { t.classList.add('translate-y-0'); setTimeout(()=>t.classList.add('hidden'),3000); }, 100); }
+        // DELETE FUNCTIONS
+        function openDeleteModal(orderId) {
+            deleteOrderId = orderId;
+            document.getElementById('delete-order-id').innerText = orderId;
+            document.getElementById('delete-modal').classList.remove('hidden');
+        }
+        
+        function closeDeleteModal() {
+            deleteOrderId = null;
+            document.getElementById('delete-modal').classList.add('hidden');
+        }
+        
+        async function confirmDelete() {
+            if (!deleteOrderId) return;
+            
+            const p = { type: 'deleteOrder', id: deleteOrderId };
+            const r = await postData(p);
+            
+            if(r.status === 'success') {
+                showToast("Order Deleted Successfully");
+                closeDeleteModal();
+                fetchData();
+            } else {
+                alert("Error deleting order: " + r.msg);
+            }
+        }
+        
+        function openSettings(){ 
+            document.getElementById('settings-modal').classList.remove('hidden'); 
+            const l=document.getElementById('settings-list'); 
+            l.innerHTML=''; 
+            (db.settings.length?db.settings:[{'Dress Name':'',Price:0,'Profit Margin':0}]).forEach(s=>addSettingRow(s['Dress Name'],s.Price,s['Profit Margin'])); 
+        }
+        
+        function addSettingRow(n='',p='',m=''){ 
+            const h=`<div class="flex gap-2 items-center s-row bg-gray-50 p-2 rounded mb-2 border border-gray-100"><input class="w-1/3 p-2 border rounded text-xs s-name bg-white" placeholder="Name" value="${n}"><input class="w-1/3 p-2 border rounded text-xs s-price bg-white" type="number" placeholder="Price" value="${p}"><input class="w-1/3 p-2 border rounded text-xs s-profit" type="number" placeholder="Profit" value="${m}"><button onclick="this.parentElement.remove()" class="text-gray-300 hover:text-black"><i class="fa-solid fa-times"></i></button></div>`; 
+            document.getElementById('settings-list').insertAdjacentHTML('beforeend',h); 
+        }
+        
+        async function saveSettings(){ 
+            const r=[]; 
+            document.querySelectorAll('.s-row').forEach(x=>{ 
+                if(x.querySelector('.s-name').value) r.push([x.querySelector('.s-name').value, x.querySelector('.s-price').value, '','',x.querySelector('.s-profit').value,'','']) 
+            }); 
+            await postData({type:'savePrices', rows:r}); 
+            showToast("Prices Saved"); 
+            document.getElementById('settings-modal').classList.add('hidden'); 
+            fetchData(); 
+        }
+        
+        async function saveExpense(){ 
+            await postData({type:"addExpense", date:document.getElementById('exp-date').value, desc:document.getElementById('exp-desc').value, amount:document.getElementById('exp-amount').value}); 
+            showToast("Expense Added"); 
+            document.getElementById('expense-modal').classList.add('hidden'); 
+            fetchData(); 
+        }
+        
+        function showToast(m) { 
+            const t=document.getElementById('toast'); 
+            document.getElementById('toast-msg').innerText=m; 
+            t.classList.remove('hidden','translate-y-0'); 
+            setTimeout(() => { 
+                t.classList.add('translate-y-0'); 
+                setTimeout(()=>t.classList.add('hidden'),3000); 
+            }, 100); 
+        }
     </script>
 </body>
 </html>
