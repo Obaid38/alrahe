@@ -3,75 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alrahe Label Manager v1.6</title>
-    
+    <title>Alrahe Label v1.8</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#FFFFFF">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* AESTHETIC CONFIGURATION: Black, White, Grey */
         body { background-color: #F3F4F6; font-family: 'Lato', sans-serif; color: #111827; }
         .font-logo { font-family: 'Cinzel', serif; }
-        
         .nav-active { color: #000000; border-top: 2px solid #000000; }
         .card { background: white; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .btn-black { background-color: #000000; color: white; font-weight: 600; border-radius: 6px; }
         .btn-outline { background-color: white; border: 1px solid #E5E7EB; color: #374151; font-weight: 600; border-radius: 6px; }
-        
-        /* Table Styling */
         .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #E5E7EB; background: white; }
         .excel-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 650px; }
         .excel-table th { background: #000000; color: white; padding: 12px; text-align: left; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
         .excel-table td { border-bottom: 1px solid #F3F4F6; padding: 12px; color: #374151; white-space: nowrap; }
         .excel-table tr:nth-child(even) td { background: #FAFAFA; }
-
-        /* Invoice Container - Hidden by default, shown strictly for PDF generation */
-        #invoice-container {
-            display: none; 
-            width: 595px; /* A4 Width */
-            background: white;
-            color: black;
-        }
+        #invoice-container { width: 794px; min-height: 1123px; background: white; color: black; padding: 40px; box-sizing: border-box; position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 9999; box-shadow: 0 0 50px rgba(0,0,0,0.5); display: none; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
     <div class="bg-white border-b border-gray-200 p-4 text-center z-20 shrink-0">
         <h1 class="font-logo text-2xl tracking-[0.1em] text-black">ALRAHE</h1>
-        <p class="text-[9px] uppercase text-gray-400 tracking-widest mt-1">Order Management</p>
     </div>
 
     <div id="main-container" class="flex-1 overflow-y-auto p-4 pb-24 relative">
 
         <div id="view-dashboard" class="space-y-4">
             <div class="flex justify-end">
-                <div class="relative">
-                    <select id="time-filter" onchange="renderDashboard()" class="appearance-none bg-white border border-gray-300 text-black text-xs font-bold py-2 pl-4 pr-8 rounded-full shadow-sm">
-                        <option value="year">Profit over the Year</option><option value="4months">Last 4 Months</option><option value="month">Monthly</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"><i class="fa-solid fa-chevron-down text-xs"></i></div>
-                </div>
+                <div class="relative"><select id="time-filter" onchange="renderDashboard()" class="appearance-none bg-white border border-gray-300 text-black text-xs font-bold py-2 pl-4 pr-8 rounded-full shadow-sm"><option value="year">Yearly</option><option value="4months">Last 4 Months</option><option value="month">Monthly</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"><i class="fa-solid fa-chevron-down text-xs"></i></div></div>
             </div>
-
             <div class="grid grid-cols-3 gap-3">
                 <div class="card p-4 border-l-4 border-black"><p class="text-[10px] uppercase text-gray-400 font-bold">Sales</p><h3 class="text-sm font-bold text-black mt-1" id="kpi-sales">0</h3></div>
                 <div class="card p-4 border-l-4 border-gray-400"><p class="text-[10px] uppercase text-gray-400 font-bold">Expenses</p><h3 class="text-sm font-bold text-gray-600 mt-1" id="kpi-expenses">0</h3></div>
                 <div class="card p-4 border-l-4 border-gray-800"><p class="text-[10px] uppercase text-gray-400 font-bold">Net Profit</p><h3 class="text-sm font-bold text-black mt-1" id="kpi-profit">0</h3></div>
             </div>
-            
             <div class="space-y-4">
                 <div class="card p-4"><h3 class="text-xs font-bold uppercase text-gray-500 mb-4">Sales Trend</h3><div class="h-48 relative"><canvas id="chart-trend"></canvas></div></div>
                 <div class="card p-4"><h3 class="text-xs font-bold uppercase text-gray-500 mb-4">Financials</h3><div class="h-40 relative"><canvas id="chart-finance"></canvas></div></div>
                 <div class="card p-4"><h3 class="text-xs font-bold uppercase text-gray-500 mb-4">Top Dresses</h3><div class="h-40 relative"><canvas id="chart-items"></canvas></div></div>
             </div>
-            
             <button onclick="document.getElementById('expense-modal').classList.remove('hidden')" class="w-full btn-black py-3 shadow-md text-sm uppercase"><i class="fa-solid fa-plus mr-2"></i> Add Expense</button>
         </div>
 
@@ -82,14 +59,21 @@
                 <form id="order-form" class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="text-[10px] font-bold uppercase text-gray-500 block mb-1">Date</label><input type="date" id="ord-date" class="w-full p-2.5 rounded-md text-sm bg-gray-50 border border-gray-200"></div>
-                        <div><label class="text-[10px] font-bold uppercase text-gray-500 block mb-1">Client</label><input type="text" id="ord-client" placeholder="Client Name" class="w-full p-2.5 rounded-md text-sm bg-gray-50 border border-gray-200"></div>
+                        <div><label class="text-[10px] font-bold uppercase text-gray-500 block mb-1">Client</label><input type="text" id="ord-client" placeholder="Name" class="w-full p-2.5 rounded-md text-sm bg-gray-50 border border-gray-200"></div>
                     </div>
                     <div id="items-list" class="space-y-3"></div>
-                    <button type="button" onclick="addItemRow()" class="w-full py-3 border border-dashed border-gray-400 text-gray-500 font-bold text-xs rounded hover:bg-gray-50">+ ADD DRESS ITEM</button>
+                    <button type="button" onclick="addItemRow()" class="w-full py-3 border border-dashed border-gray-400 text-gray-500 font-bold text-xs rounded hover:bg-gray-50">+ ADD DRESS</button>
+                    
                     <div class="bg-gray-50 p-4 rounded-lg space-y-3 border border-gray-200 mt-4">
-                        <div class="flex justify-between items-center text-sm"><label class="font-bold text-gray-600">Total Amount</label><span id="grand-total" class="font-bold text-black text-lg">0</span></div>
+                        <div class="flex justify-between items-center text-sm"><label class="font-bold text-gray-600">Item Total</label><span id="display-item-total" class="font-bold text-black">0</span></div>
+                        
+                        <div><label class="text-[10px] font-bold uppercase text-gray-500 block mb-1">Shipping Cost</label><input type="number" id="ord-shipping" placeholder="0" class="w-full p-2 border rounded border-gray-300 font-mono" oninput="calcTotals()"></div>
+                        
+                        <div class="flex justify-between items-center text-lg font-bold text-black pt-2 border-t border-gray-300"><label>Grand Total</label><span id="display-grand-total">0</span></div>
+                        
                         <div><label class="text-[10px] font-bold uppercase text-gray-500 block mb-1">Advance</label><input type="number" id="ord-advance" placeholder="0" class="w-full p-2 border rounded border-gray-300 font-mono" oninput="calcTotals()"></div>
-                        <div class="flex justify-between items-center text-sm pt-3 border-t border-gray-200"><span class="font-bold text-gray-500">Remaining</span><span id="ord-remaining" class="font-bold text-black text-lg">0</span></div>
+                        
+                        <div class="flex justify-between items-center text-sm pt-2 border-t border-gray-200"><span class="font-bold text-gray-500">Remaining</span><span id="ord-remaining" class="font-bold text-red-600 text-lg">0</span></div>
                     </div>
                     <button type="submit" id="btn-submit" class="w-full btn-black py-4 shadow-lg text-sm uppercase">SUBMIT ORDER</button>
                 </form>
@@ -97,10 +81,10 @@
         </div>
 
         <div id="view-list" class="hidden space-y-4">
-            <div class="relative"><i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i><input type="text" id="search" placeholder="Search Client..." class="w-full pl-10 p-3 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-1 focus:ring-black" onkeyup="renderOrders()"></div>
+            <div class="relative"><i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i><input type="text" id="search" placeholder="Search..." class="w-full pl-10 p-3 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-1 focus:ring-black" onkeyup="renderOrders()"></div>
             <div class="table-container shadow-sm">
                 <table class="excel-table">
-                    <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Dress</th><th>Qty</th><th>Size</th><th>Due</th><th>Status</th><th>Action</th></tr></thead>
+                    <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Dress</th><th>Qty</th><th>Size</th><th>Due</th><th>Status</th><th>Edit</th></tr></thead>
                     <tbody id="orders-tbody"></tbody>
                 </table>
             </div>
@@ -112,40 +96,27 @@
         <button onclick="switchTab('new')" id="nav-new" class="text-gray-400 flex flex-col items-center px-4 py-1"><i class="fa-solid fa-plus-circle text-lg mb-1"></i><span class="text-[9px] font-bold tracking-widest">NEW</span></button>
         <button onclick="switchTab('list')" id="nav-list" class="text-gray-400 flex flex-col items-center px-4 py-1"><i class="fa-solid fa-list text-lg mb-1"></i><span class="text-[9px] font-bold tracking-widest">ORDERS</span></button>
     </div>
-    <div id="invoice-wrapper" style="
-        display:none;
-        position:fixed;
-        inset:0;
-        width:100%;
-        height:100%;
-        overflow:auto;
-        background:white;
-        z-index:999999;
-    ">
-    </div>
-
 
     <div id="invoice-container">
         <div class="p-12 h-full flex flex-col justify-between text-black">
-            <div class="text-center mb-8"><h1 class="font-logo text-6xl tracking-[0.2em] mb-2">ALRAHE</h1><p class="text-[10px] uppercase tracking-[0.4em] text-gray-500">Official Invoice</p></div>
-            <div class="flex justify-between items-end border-b border-black pb-4 mb-6"><div><p class="text-xs font-bold uppercase text-gray-400">Bill To</p><h2 class="text-2xl font-bold uppercase mt-1" id="inv-client">Client Name</h2></div><div class="text-right"><p class="text-xs text-gray-500 mb-1">Order #<span id="inv-id" class="font-mono text-black font-bold"></span></p><p class="text-xs text-gray-500">Date: <span id="inv-date" class="text-black font-bold"></span></p></div></div>
-            <div class="flex-1">
-                <table class="w-full text-left mb-6"><thead class="border-b border-gray-200"><tr><th class="py-2 text-xs uppercase text-gray-400 font-bold">Item</th><th class="py-2 text-xs uppercase text-gray-400 font-bold text-center">Size</th><th class="py-2 text-xs uppercase text-gray-400 font-bold text-center">Qty</th><th class="py-2 text-xs uppercase text-gray-400 font-bold text-right">Amount</th></tr></thead><tbody id="inv-items" class="text-sm"></tbody></table>
-            </div>
-            <div class="flex justify-end mb-12"><div class="w-1/2 space-y-2"><div class="flex justify-between text-sm"><span class="text-gray-500">Subtotal</span><span id="inv-subtotal">0</span></div><div class="flex justify-between text-sm"><span class="text-gray-500">Shipping</span><span id="inv-shipping">0</span></div><div class="border-t border-gray-200 my-2"></div><div class="flex justify-between text-base font-bold"><span class="uppercase">Total</span><span id="inv-total">0</span></div><div class="flex justify-between text-sm text-gray-500"><span>Advance</span><span id="inv-advance">0</span></div><div class="flex justify-between text-lg font-bold border-t border-black pt-2 mt-2"><span>Balance</span><span id="inv-due">0</span></div></div></div>
-            <div class="text-center text-xs text-gray-400 uppercase tracking-widest mt-auto"><p>Thank you for choosing Alrahe</p><p class="mt-1">No Exchange - No Return</p></div>
+            <div class="text-center mb-8"><h1 class="font-logo text-7xl tracking-[0.2em] mb-2">ALRAHE</h1><p class="text-[10px] uppercase tracking-[0.6em] text-gray-500 font-bold">Official Invoice</p></div>
+            <div class="flex justify-between items-end border-b-2 border-black pb-4 mb-6"><div><p class="text-xs font-bold uppercase text-gray-400">Bill To</p><h2 class="text-2xl font-bold uppercase mt-1" id="inv-client">Client Name</h2></div><div class="text-right"><p class="text-xs text-gray-500 mb-1">Order #<span id="inv-id" class="font-mono text-black font-bold"></span></p><p class="text-xs text-gray-500">Date: <span id="inv-date" class="text-black font-bold"></span></p></div></div>
+            <div class="flex-1"><table class="w-full text-left mb-6"><thead class="border-b border-gray-300"><tr><th class="py-3 text-sm uppercase text-gray-500 font-bold">Item</th><th class="py-3 text-sm uppercase text-gray-500 font-bold text-center">Size</th><th class="py-3 text-sm uppercase text-gray-500 font-bold text-center">Qty</th><th class="py-3 text-sm uppercase text-gray-500 font-bold text-right">Amount</th></tr></thead><tbody id="inv-items" class="text-base"></tbody></table></div>
+            <div class="flex justify-end mb-12"><div class="w-1/2 space-y-3"><div class="flex justify-between text-base"><span class="text-gray-500">Subtotal</span><span id="inv-subtotal" class="font-mono">0</span></div><div class="flex justify-between text-base"><span class="text-gray-500">Shipping</span><span id="inv-shipping" class="font-mono">0</span></div><div class="border-t border-gray-300 my-2"></div><div class="flex justify-between text-lg font-bold"><span class="uppercase">Total</span><span id="inv-total">0</span></div><div class="flex justify-between text-base text-gray-500"><span>Advance</span><span id="inv-advance" class="font-mono">0</span></div><div class="flex justify-between text-xl font-bold border-t-2 border-black pt-3 mt-2"><span>Balance</span><span id="inv-due">0</span></div></div></div>
+            <div class="text-center text-xs text-gray-400 uppercase tracking-widest mt-auto font-bold"><p class="mb-1">Thank you for choosing Alrahe</p><p>No Exchange - No Return</p></div>
         </div>
     </div>
 
-    <div id="success-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-lg p-6 text-center shadow-2xl"><i class="fa-solid fa-circle-check text-4xl text-black mb-4"></i><h3 class="font-bold text-lg mb-2">Order Saved!</h3><p class="text-sm text-gray-500 mb-6" id="success-msg"></p><div class="flex gap-3"><button onclick="closeSuccess()" class="w-1/2 btn-outline py-3 text-xs uppercase">Close</button><button onclick="generateInvoiceFromModal()" class="w-1/2 btn-black py-3 text-xs uppercase"><i class="fa-solid fa-download mr-2"></i> Invoice</button></div></div></div>
+    <div id="success-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-lg p-6 text-center shadow-2xl"><i class="fa-solid fa-circle-check text-4xl text-black mb-4"></i><h3 class="font-bold text-lg mb-2">Saved!</h3><p class="text-sm text-gray-500 mb-6" id="success-msg"></p><div class="flex gap-3"><button onclick="closeSuccess()" class="w-1/2 btn-outline py-3 text-xs uppercase">Close</button><button onclick="generateInvoiceFromModal()" class="w-1/2 btn-black py-3 text-xs uppercase"><i class="fa-solid fa-download mr-2"></i> Invoice</button></div></div></div>
+    
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-md rounded-lg p-6 overflow-y-auto max-h-[90vh] shadow-2xl"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg text-black">Edit Order</h3><span id="edit-id-disp" class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-mono"></span></div><input type="hidden" id="edit-id"><input type="hidden" id="edit-old-dress"><form id="edit-form" class="space-y-3"><div class="grid grid-cols-2 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Date</label><input id="edit-date" type="date" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Client</label><input id="edit-client" type="text" class="w-full p-2 border rounded text-sm"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Dress</label><select id="edit-dress" class="w-full p-2 border rounded text-sm bg-white"></select></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Size</label><select id="edit-size" class="w-full p-2 border rounded text-sm bg-white"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>Custom</option></select></div></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Status</label><select id="edit-status" class="w-full p-2 border rounded text-sm bg-white"><option>Pending</option><option>Production</option><option>Delivered</option><option>Cancelled</option></select></div><div class="grid grid-cols-2 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Price</label><input id="edit-price" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Qty</label><input id="edit-qty" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Shipping</label><input id="edit-shipping" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Advance</label><input id="edit-adv" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div><div class="flex justify-between font-bold bg-gray-50 p-3 rounded text-sm border border-gray-200 mt-2"><span class="text-gray-600">Total: <span id="edit-total">0</span></span><span class="text-black">Due: <span id="edit-due">0</span></span></div><div class="flex gap-3 mt-6"><button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')" class="w-1/3 btn-outline py-3">Cancel</button><button type="button" onclick="currentInvoiceFromEdit()" class="w-1/3 btn-outline py-3"><i class="fa-solid fa-download"></i> PDF</button><button type="button" onclick="saveEdit()" class="w-1/3 btn-black py-3">Update</button></div></form></div></div>
     
     <div id="expense-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-lg p-6 shadow-2xl"><h3 class="font-bold mb-6 text-lg text-black">Add Expense</h3><input type="date" id="exp-date" class="w-full mb-3 p-3 border rounded bg-gray-50"><input type="text" id="exp-desc" placeholder="Description" class="w-full mb-3 p-3 border rounded bg-gray-50"><input type="number" id="exp-amount" placeholder="Amount" class="w-full mb-6 p-3 border rounded bg-gray-50"><div class="flex gap-3"><button onclick="document.getElementById('expense-modal').classList.add('hidden')" class="w-1/2 btn-outline py-3">Cancel</button><button onclick="saveExpense()" class="w-1/2 btn-black py-3">Save</button></div></div></div>
     <div id="settings-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-sm rounded-lg p-6 h-[70vh] flex flex-col shadow-2xl"><h3 class="font-bold mb-4 text-lg text-black">Price Settings</h3><div id="settings-list" class="flex-1 overflow-y-auto space-y-2 mb-4 pr-1"></div><button onclick="addSettingRow()" class="text-xs text-black font-bold mb-4 flex items-center gap-1 border border-gray-300 rounded px-3 py-2 w-max hover:bg-gray-50"><i class="fa-solid fa-plus"></i> Add Dress</button><div class="flex gap-3 shrink-0"><button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="w-1/2 btn-outline py-3">Close</button><button onclick="saveSettings()" class="w-1/2 btn-black py-3">Save All</button></div></div></div>
-    
-    <div id="edit-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm"><div class="bg-white w-full max-w-md rounded-lg p-6 overflow-y-auto max-h-[90vh] shadow-2xl"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg text-black">Edit Order</h3><span id="edit-id-disp" class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-mono"></span></div><input type="hidden" id="edit-id"><input type="hidden" id="edit-old-dress"><form id="edit-form" class="space-y-3"><div class="grid grid-cols-2 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Date</label><input id="edit-date" type="date" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Client</label><input id="edit-client" type="text" class="w-full p-2 border rounded text-sm"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Dress</label><select id="edit-dress" class="w-full p-2 border rounded text-sm bg-white"></select></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Size</label><select id="edit-size" class="w-full p-2 border rounded text-sm bg-white"><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>Custom</option></select></div></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Status</label><select id="edit-status" class="w-full p-2 border rounded text-sm bg-white"><option>Pending</option><option>Production</option><option>Delivered</option><option>Cancelled</option></select></div><div class="grid grid-cols-3 gap-3"><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Price</label><input id="edit-price" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Qty</label><input id="edit-qty" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div><div><label class="font-bold text-[10px] uppercase text-gray-500 mb-1 block">Advance</label><input id="edit-adv" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm"></div></div><div class="flex justify-between font-bold bg-gray-50 p-3 rounded text-sm border border-gray-200 mt-2"><span class="text-gray-600">Total: <span id="edit-total">0</span></span><span class="text-black">Due: <span id="edit-due">0</span></span></div><div class="flex gap-3 mt-6"><button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')" class="w-1/3 btn-outline py-3">Cancel</button><button type="button" onclick="currentInvoiceFromEdit()" class="w-1/3 btn-outline py-3"><i class="fa-solid fa-download"></i> PDF</button><button type="button" onclick="saveEdit()" class="w-1/3 btn-black py-3">Update</button></div></form></div></div>
     <div id="toast" class="hidden fixed top-6 right-6 z-[70] bg-black text-white px-6 py-4 rounded shadow-2xl flex items-center gap-4 transition-all transform translate-y-0"><i class="fa-solid fa-circle-check text-white text-xl"></i><div><h4 class="font-bold text-sm">Success</h4><span id="toast-msg" class="text-xs text-gray-300">Action saved</span></div></div>
 
     <script>
+        // ⚠️ PASTE YOUR URL HERE
         const API_URL = "https://script.google.com/macros/s/AKfycbwfde7eBWLWjn9l93GpwrtoyHukR65GMejKiA_kSL2D0Erdz9zTnHU3M2lgeUwtrh0m/exec"; 
         
         let db = { orders: [], expenses: [], settings: [] };
@@ -169,120 +140,152 @@
             container.insertAdjacentHTML('beforeend', html);
         }
         function updateRowPrice(el) { const s = db.settings.find(x => x['Dress Name'] === el.value); el.closest('.item-row').querySelector('.item-price').innerText = s?s.Price:0; calcTotals(); }
-        function calcTotals() { let g=0; document.querySelectorAll('.item-row').forEach(r => { const p=parseFloat(r.querySelector('.item-price').innerText)||0; const q=parseFloat(r.querySelector('.item-qty').value)||0; const t=p*q; r.querySelector('.item-total').innerText=t; g+=t; }); const a=parseFloat(document.getElementById('ord-advance').value)||0; document.getElementById('grand-total').innerText=g.toLocaleString(); document.getElementById('ord-remaining').innerText=(g-a).toLocaleString(); }
+        
+        function calcTotals() { 
+            let items = 0; 
+            document.querySelectorAll('.item-row').forEach(r => { 
+                const p=parseFloat(r.querySelector('.item-price').innerText)||0; 
+                const q=parseFloat(r.querySelector('.item-qty').value)||0; 
+                const t=p*q; 
+                r.querySelector('.item-total').innerText=t; 
+                items+=t; 
+            }); 
+            
+            // New Logic: Items + Shipping
+            const ship = parseFloat(document.getElementById('ord-shipping').value)||0;
+            const grand = items + ship;
+            const adv = parseFloat(document.getElementById('ord-advance').value)||0; 
+            
+            document.getElementById('display-item-total').innerText=items.toLocaleString();
+            document.getElementById('grand-total').innerText=grand.toLocaleString(); 
+            document.getElementById('ord-remaining').innerText=(grand-adv).toLocaleString(); 
+        }
         
         document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault(); const btn=document.getElementById('btn-submit'); btn.innerText='Saving...'; btn.disabled=true;
-            const grand=parseFloat(document.getElementById('grand-total').innerText.replace(/,/g,'')); const adv=parseFloat(document.getElementById('ord-advance').value)||0;
-            const items=[]; document.querySelectorAll('.item-row').forEach(r=>{ const p=parseFloat(r.querySelector('.item-price').innerText); const q=parseFloat(r.querySelector('.item-qty').value); const t=parseFloat(r.querySelector('.item-total').innerText); const ra=(t/grand)*adv; items.push({dress:r.querySelector('.item-dress').value, size:r.querySelector('.item-size').value, unitPrice:p, qty:q, total:t, advance:ra, remaining:t-ra}) });
+            const grand=parseFloat(document.getElementById('grand-total').innerText.replace(/,/g,'')); 
+            const adv=parseFloat(document.getElementById('ord-advance').value)||0;
+            const ship=parseFloat(document.getElementById('ord-shipping').value)||0;
+            
+            const items=[]; 
+            document.querySelectorAll('.item-row').forEach(r=>{ 
+                const p=parseFloat(r.querySelector('.item-price').innerText); 
+                const q=parseFloat(r.querySelector('.item-qty').value); 
+                const t=parseFloat(r.querySelector('.item-total').innerText); 
+                const itemRatio = t / (grand - ship); // Ratio based on Item total vs Grand Total (Excluding Shipping)
+                const ra = (itemRatio * adv); 
+                
+                // Distribute shipping proportionally too? No, shipping usually global. 
+                // We will attach shipping to the first item or store it separately in invoice.
+                // Current backend saves "Shipping" column. We need to pass it.
+                // Since user database has one row per dress, we will save full shipping on first row and 0 on others? 
+                // OR we just save it on all rows (duplicate) or split it. 
+                // Simplified: Split Shipping evenly or proportionally?
+                // Let's Split Proportionally to keep row totals accurate.
+                const rowShip = (t / (grand - ship)) * ship;
+                
+                items.push({
+                    dress:r.querySelector('.item-dress').value, 
+                    size:r.querySelector('.item-size').value, 
+                    unitPrice:p, 
+                    qty:q, 
+                    total: t + rowShip, // Row Total includes its share of shipping
+                    shipping: rowShip,  // Save specific shipping share
+                    advance:ra, 
+                    remaining:(t+rowShip)-ra
+                }) 
+            });
+            
             const p={type:"createOrder", date:document.getElementById('ord-date').value, client:document.getElementById('ord-client').value, items:items};
-            lastSavedOrder = { id: "ORD-NEW", date: p.date, client: p.client, items: items, total: grand, advance: adv, due: grand-adv, status: "Production" };
+            lastSavedOrder = { id: "ORD-NEW", date: p.date, client: p.client, items: items, total: grand, advance: adv, due: grand-adv, status: "Production", shipping: ship };
+            
             const r=await postData(p);
             if(r.status==="success"){ lastSavedOrder.id = r.orderId; document.getElementById('success-msg').innerText = "Order " + r.orderId + " created successfully."; document.getElementById('success-modal').classList.remove('hidden'); e.target.reset(); document.getElementById('items-list').innerHTML=''; addItemRow(); fetchData(); } else { alert("Error: "+r.msg); }
             btn.innerHTML='<span>SUBMIT ORDER</span>'; btn.disabled=false;
         });
         function closeSuccess() { document.getElementById('success-modal').classList.add('hidden'); }
 
-        // --- INVOICE GENERATION (THE FIX) ---
-        async function generateInvoice(data) {
-
-    // --- 1. Fill invoice data into ORIGINAL (same as yours) ---
+        // --- INVOICE GENERATION ---
+        function generateInvoice(data) {
             document.getElementById('inv-client').innerText = data.client;
             document.getElementById('inv-id').innerText = data.id;
             document.getElementById('inv-date').innerText = new Date(data.date).toLocaleDateString();
-
-            const tbody = document.getElementById('inv-items');
-            tbody.innerHTML = '';
-
-            let subtotal = 0;
-            let shipping = 0;
+            
+            const tbody = document.getElementById('inv-items'); tbody.innerHTML = '';
+            let subtotal = 0; let totalShipping = 0;
 
             data.items.forEach(item => {
-                const setting = db.settings.find(s => s['Dress Name'] === item.dress);
-                const basePrice = setting ? setting.Price : item.unitPrice;
-                let itemTotal = basePrice * item.qty;
-
-                if (item.unitPrice > basePrice) {
-                    shipping += (item.unitPrice - basePrice) * item.qty;
-                }
-
-                subtotal += itemTotal;
-
-                tbody.innerHTML += `
-                    <tr class="border-b border-gray-100">
-                        <td class="py-2"><p class="font-bold uppercase text-black">${item.dress}</p></td>
-                        <td class="py-2 text-center text-gray-500">${item.size}</td>
-                        <td class="py-2 text-center text-gray-500">${item.qty}</td>
-                        <td class="py-2 text-right font-mono">${itemTotal.toLocaleString()}</td>
-                    </tr>`;
+                // Item unit price * qty
+                const lineTotal = item.unitPrice * item.qty;
+                subtotal += lineTotal;
+                totalShipping += (item.shipping || 0); // Aggregate shipping shares
+                
+                tbody.innerHTML += `<tr class="border-b border-gray-100"><td class="py-3"><p class="font-bold text-black uppercase">${item.dress}</p></td><td class="py-3 text-center text-gray-500">${item.size}</td><td class="py-3 text-center text-gray-500">${item.qty}</td><td class="py-3 text-right font-mono text-black">${lineTotal.toLocaleString()}</td></tr>`;
             });
 
+            // If we are editing, totalShipping comes from calc, if new order, it comes from distribution.
+            // Ensure visual consistency.
+            const finalTotal = subtotal + totalShipping;
+
             document.getElementById('inv-subtotal').innerText = subtotal.toLocaleString();
-            document.getElementById('inv-shipping').innerText = shipping.toLocaleString();
-            document.getElementById('inv-total').innerText = "PKR " + (subtotal + shipping).toLocaleString();
+            document.getElementById('inv-shipping').innerText = totalShipping.toLocaleString();
+            document.getElementById('inv-total').innerText = "PKR " + finalTotal.toLocaleString();
             document.getElementById('inv-advance').innerText = data.advance.toLocaleString();
-            document.getElementById('inv-due').innerText = "PKR " + data.due.toLocaleString();
+            document.getElementById('inv-due').innerText = "PKR " + (finalTotal - data.advance).toLocaleString();
 
-
-            // --- 2. Clone invoice (THIS FIXES YOUR ISSUE) ---
-            const original = document.getElementById("invoice-container");
-            const clone = original.cloneNode(true);
-
-            const wrapper = document.getElementById("invoice-wrapper");
-            wrapper.innerHTML = "";
-            wrapper.appendChild(clone);
-
-            wrapper.style.display = "block";
-            clone.style.display = "block";
-
-            // force render
-            await new Promise(res => setTimeout(res, 150));
-
-
-            // --- 3. Generate PDF from the CLONE ---
-            await html2pdf().set({
-                margin: 0,
-                filename: `Invoice_${data.id}_${data.client}.pdf`,
-                image: { type: "jpeg", quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
-                jsPDF: { unit: "pt", format: "a4", orientation: "portrait" }
-            }).from(clone).save();
-
-
-            // --- 4. Cleanup ---
-            wrapper.style.display = "none";
-            wrapper.innerHTML = "";
+            const element = document.getElementById('invoice-container');
+            element.style.display = 'block'; // Make Visible
+            
+            setTimeout(() => {
+                const opt = { margin: 0, filename: `Invoice_${data.id}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' } };
+                html2pdf().set(opt).from(element).save().then(() => { element.style.display = 'none'; });
+            }, 500);
         }
-
-
-
         function generateInvoiceFromModal() { generateInvoice(lastSavedOrder); }
+        
         function currentInvoiceFromEdit() {
-            const p=parseFloat(document.getElementById('edit-price').value), q=parseFloat(document.getElementById('edit-qty').value), t=p*q, a=parseFloat(document.getElementById('edit-adv').value);
-            const d={id:document.getElementById('edit-id').value, client:document.getElementById('edit-client').value, date:document.getElementById('edit-date').value, status:document.getElementById('edit-status').value, advance:a, due:t-a, items:[{dress:document.getElementById('edit-dress').value, size:document.getElementById('edit-size').value, unitPrice:p, qty:q}]};
+            const p=parseFloat(document.getElementById('edit-price').value), q=parseFloat(document.getElementById('edit-qty').value), s=parseFloat(document.getElementById('edit-shipping').value)||0, t=(p*q)+s, a=parseFloat(document.getElementById('edit-adv').value);
+            const d={id:document.getElementById('edit-id').value, client:document.getElementById('edit-client').value, date:document.getElementById('edit-date').value, status:document.getElementById('edit-status').value, advance:a, due:t-a, items:[{dress:document.getElementById('edit-dress').value, size:document.getElementById('edit-size').value, unitPrice:p, qty:q, shipping:s}]};
             generateInvoice(d);
         }
 
-        // --- DASHBOARD (Line Chart Fix) ---
+        // --- DASHBOARD ---
         function renderDashboard(){ 
             const f=document.getElementById('time-filter').value; const n=new Date(); let sd=new Date('2000-01-01'); if(f==='month')sd=new Date(n.getFullYear(),n.getMonth(),1); if(f==='year')sd=new Date(n.getFullYear(),0,1); if(f==='4months'){sd=new Date();sd.setMonth(n.getMonth()-4);} 
             const fo=db.orders.filter(o=>new Date(o.Date)>=sd); const fe=db.expenses.filter(e=>new Date(e.Date)>=sd); const ts=fo.reduce((s,o)=>s+(o['Total Amount']||0),0); const te=fe.reduce((s,e)=>s+(e.Amount||0),0); 
+            // Profit = Margin * Qty (Shipping ignored)
             let gp=0; fo.forEach(o=>{const s=db.settings.find(x=>x['Dress Name']===o['Dress Name']);if(s)gp+=(s['Profit Margin']*o.Quantity);}); const np=gp-te; 
             document.getElementById('kpi-sales').innerText=ts.toLocaleString(); document.getElementById('kpi-expenses').innerText=te.toLocaleString(); document.getElementById('kpi-profit').innerText=np.toLocaleString(); 
             const ic={}; fo.forEach(o=>ic[o['Dress Name']]=(ic[o['Dress Name']]||0)+o.Quantity); updateChart('items','bar',Object.keys(ic),Object.values(ic),'#000000','Units'); 
             const ms={}; fo.forEach(o=>{const d=new Date(o.Date).toLocaleString('default',{month:'short'});ms[d]=(ms[d]||0)+o['Total Amount']}); updateChart('trend','line',Object.keys(ms),Object.values(ms),'#000000','Sales'); 
             updateChart('finance','bar',['Expenses','Profit'],[te,np],['#9CA3AF','#000000'],'PKR'); 
         }
-        function updateChart(id,type,l,d,c,lb){ 
-            if(charts[id])charts[id].destroy(); const ctx=document.getElementById('chart-'+id).getContext('2d'); 
-            charts[id]=new Chart(ctx,{type:type,data:{labels:l,datasets:[{label:lb,data:d,backgroundColor:c,borderColor:c,borderWidth:1.5,borderRadius:4,fill:false,tension:type==='line'?0.4:0,pointBackgroundColor:'#FFF',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{display:false}},x:{grid:{display:false}}}}}); 
-        }
+        function updateChart(id,type,l,d,c,lb){ if(charts[id])charts[id].destroy(); const ctx=document.getElementById('chart-'+id).getContext('2d'); charts[id]=new Chart(ctx,{type:type,data:{labels:l,datasets:[{label:lb,data:d,backgroundColor:c,borderColor:c,borderWidth:1.5,borderRadius:4,fill:false,tension:type==='line'?0.4:0,pointBackgroundColor:'#FFF',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{display:false}},x:{grid:{display:false}}}}}); }
 
-        // --- TABLE, EDIT, SETTINGS ---
+        // --- EDIT ---
         function renderOrders(){ const tb=document.getElementById('orders-tbody'); const s=document.getElementById('search').value.toLowerCase(); tb.innerHTML=''; db.orders.filter(o=>o['Client Name'].toLowerCase().includes(s)||o['Order ID'].toLowerCase().includes(s)).reverse().forEach(o=>{ const due=Math.round(o['Remaining Amount']); let bc='bg-gray-100 text-gray-600'; if(o.Status==='Delivered')bc='bg-black text-white'; if(o.Status==='Pending')bc='bg-gray-200 text-black'; if(o.Status==='Cancelled')bc='bg-red-50 text-red-600'; const tr=`<tr class="transition-colors hover:bg-gray-50"><td class="font-mono font-bold text-black">${o['Order ID']}</td><td>${new Date(o.Date).toLocaleDateString()}</td><td class="font-bold">${o['Client Name']}</td><td>${o['Dress Name']}</td><td>${o['Quantity']}</td><td><span class="bg-gray-100 px-2 py-0.5 rounded text-xs border border-gray-200 font-mono">${o.Size||'-'}</span></td><td class="font-mono font-bold ${due>0?'text-red-500':'text-green-600'}">${due}</td><td class="text-center"><span class="${bc} px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wide">${o.Status}</span></td><td class="text-center"><button onclick='openEdit(${JSON.stringify(o)})' class="text-gray-400 hover:text-black transition"><i class="fa-solid fa-pen-to-square"></i></button></td></tr>`; tb.insertAdjacentHTML('beforeend', tr); }); }
-        function openEdit(o){ document.getElementById('edit-modal').classList.remove('hidden'); document.getElementById('edit-id').value=o['Order ID']; document.getElementById('edit-old-dress').value=o['Dress Name']; document.getElementById('edit-id-disp').innerText=o['Order ID']; document.getElementById('edit-date').value=new Date(o.Date).toISOString().split('T')[0]; document.getElementById('edit-client').value=o['Client Name']; document.getElementById('edit-status').value=o.Status; document.getElementById('edit-size').value=o.Size||'S'; document.getElementById('edit-price').value=o['Unit Price']; document.getElementById('edit-qty').value=o.Quantity; document.getElementById('edit-adv').value=o['Advance Payment']; const ds=document.getElementById('edit-dress'); ds.innerHTML=''; const defs=new Set(['Nur','Mehr','Hala']); if(db.settings)db.settings.forEach(s=>defs.add(s['Dress Name'])); defs.forEach(d=>ds.innerHTML+=`<option>${d}</option>`); ds.value=o['Dress Name']; calcEdit(); }
-        function calcEdit(){ const p=parseFloat(document.getElementById('edit-price').value)||0; const q=parseFloat(document.getElementById('edit-qty').value)||0; const a=parseFloat(document.getElementById('edit-adv').value)||0; document.getElementById('edit-total').innerText=p*q; document.getElementById('edit-due').innerText=(p*q)-a; }
-        async function saveEdit(){ const p={type:'updateFull',id:document.getElementById('edit-id').value,oldDress:document.getElementById('edit-old-dress').value,date:document.getElementById('edit-date').value,client:document.getElementById('edit-client').value,dress:document.getElementById('edit-dress').value,size:document.getElementById('edit-size').value,status:document.getElementById('edit-status').value,price:document.getElementById('edit-price').value,qty:document.getElementById('edit-qty').value,total:document.getElementById('edit-total').innerText,advance:document.getElementById('edit-adv').value,remaining:document.getElementById('edit-due').innerText}; const r=await postData(p); if(r.status==='success'){ showToast("Updated"); document.getElementById('edit-modal').classList.add('hidden'); fetchData(); } else { alert(r.msg); } }
+        function openEdit(o){ 
+            document.getElementById('edit-modal').classList.remove('hidden'); document.getElementById('edit-id').value=o['Order ID']; document.getElementById('edit-old-dress').value=o['Dress Name']; document.getElementById('edit-id-disp').innerText=o['Order ID']; document.getElementById('edit-date').value=new Date(o.Date).toISOString().split('T')[0]; document.getElementById('edit-client').value=o['Client Name']; document.getElementById('edit-status').value=o.Status; document.getElementById('edit-size').value=o.Size||'S'; document.getElementById('edit-price').value=o['Unit Price']; document.getElementById('edit-qty').value=o.Quantity; document.getElementById('edit-adv').value=o['Advance Payment']; 
+            document.getElementById('edit-shipping').value=o['Shipping Cost']||0; // Populate Shipping
+            const ds=document.getElementById('edit-dress'); ds.innerHTML=''; const defs=new Set(['Nur','Mehr','Hala']); if(db.settings)db.settings.forEach(s=>defs.add(s['Dress Name'])); defs.forEach(d=>ds.innerHTML+=`<option>${d}</option>`); ds.value=o['Dress Name']; calcEdit(); 
+        }
+        function calcEdit(){ 
+            const p=parseFloat(document.getElementById('edit-price').value)||0; 
+            const q=parseFloat(document.getElementById('edit-qty').value)||0; 
+            const s=parseFloat(document.getElementById('edit-shipping').value)||0;
+            const a=parseFloat(document.getElementById('edit-adv').value)||0; 
+            const t = (p*q) + s; // Price*Qty + Shipping
+            document.getElementById('edit-total').innerText=t; 
+            document.getElementById('edit-due').innerText=t-a; 
+        }
+        async function saveEdit(){ 
+            const p={type:'updateFull',id:document.getElementById('edit-id').value,oldDress:document.getElementById('edit-old-dress').value,date:document.getElementById('edit-date').value,client:document.getElementById('edit-client').value,dress:document.getElementById('edit-dress').value,size:document.getElementById('edit-size').value,status:document.getElementById('edit-status').value,price:document.getElementById('edit-price').value,qty:document.getElementById('edit-qty').value,
+            shipping:document.getElementById('edit-shipping').value, // Send Shipping
+            total:document.getElementById('edit-total').innerText,advance:document.getElementById('edit-adv').value,remaining:document.getElementById('edit-due').innerText}; 
+            const r=await postData(p); if(r.status==='success'){ showToast("Updated"); document.getElementById('edit-modal').classList.add('hidden'); fetchData(); } else { alert(r.msg); } 
+        }
+        
+        // --- HELPERS ---
         function openSettings(){ document.getElementById('settings-modal').classList.remove('hidden'); const l=document.getElementById('settings-list'); l.innerHTML=''; (db.settings.length?db.settings:[{'Dress Name':'',Price:0,'Profit Margin':0}]).forEach(s=>addSettingRow(s['Dress Name'],s.Price,s['Profit Margin'])); }
         function addSettingRow(n='',p='',m=''){ const h=`<div class="flex gap-2 items-center s-row bg-gray-50 p-2 rounded mb-2 border border-gray-100"><input class="w-1/3 p-2 border rounded text-xs s-name bg-white" placeholder="Name" value="${n}"><input class="w-1/3 p-2 border rounded text-xs s-price bg-white" type="number" placeholder="Price" value="${p}"><input class="w-1/3 p-2 border rounded text-xs s-profit" type="number" placeholder="Profit" value="${m}"><button onclick="this.parentElement.remove()" class="text-gray-300 hover:text-black"><i class="fa-solid fa-times"></i></button></div>`; document.getElementById('settings-list').insertAdjacentHTML('beforeend',h); }
         async function saveSettings(){ const r=[]; document.querySelectorAll('.s-row').forEach(x=>{ if(x.querySelector('.s-name').value) r.push([x.querySelector('.s-name').value, x.querySelector('.s-price').value, '','',x.querySelector('.s-profit').value,'','']) }); await postData({type:'savePrices', rows:r}); showToast("Prices Saved"); document.getElementById('settings-modal').classList.add('hidden'); fetchData(); }
