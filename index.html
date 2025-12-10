@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Alrahe Label Manager</title>
+    <title>Alrahe Label Manager v1.2</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#F9F5EB">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,92 +14,129 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        /* v1.0 Theme Styles */
+        /* Theme Configuration */
         body { background-color: #F9F5EB; font-family: 'Lato', sans-serif; color: #5D4037; }
+        
+        /* Navigation Active State */
         .nav-active { color: #C9A66B; border-top: 2px solid #C9A66B; }
+        
+        /* Card Styling */
         .card { background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .btn-primary { background-color: #C9A66B; color: white; font-weight: bold; border-radius: 0.75rem; }
+        
+        /* Buttons */
+        .btn-primary { background-color: #C9A66B; color: white; font-weight: bold; border-radius: 0.5rem; transition: all 0.2s; }
+        .btn-primary:active { transform: scale(0.98); }
         .btn-dark { background-color: #5D4037; color: white; font-weight: bold; border-radius: 0.5rem; }
         
-        /* Table Styles for "Excel" look */
-        .excel-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        .excel-table th { background: #5D4037; color: white; padding: 8px; text-align: left; text-transform: uppercase; }
-        .excel-table td { border-bottom: 1px solid #E5E7EB; padding: 8px; background: white; }
+        /* Excel-like Table Styling */
+        .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid #E5E7EB; }
+        .excel-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; min-width: 600px; }
+        .excel-table th { background: #5D4037; color: white; padding: 10px; text-align: left; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+        .excel-table td { border-bottom: 1px solid #E5E7EB; padding: 10px; background: white; white-space: nowrap; }
         .excel-table tr:nth-child(even) td { background: #FAFAF9; }
+        .excel-table tr:hover td { background: #F5F5F4; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #C4A574; border-radius: 3px; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
-    <div class="bg-[#3E2723] text-[#F9F5EB] p-4 text-center shadow-lg z-20">
+    <div class="bg-[#3E2723] text-[#F9F5EB] p-4 text-center shadow-lg z-20 shrink-0">
         <h1 class="font-serif text-xl tracking-[0.2em] font-bold">ALRAHE LABEL</h1>
+        <p class="text-[10px] uppercase text-[#C9A66B] tracking-widest mt-1">Management System</p>
     </div>
 
-    <div id="main-container" class="flex-1 overflow-y-auto p-4 pb-24">
+    <div id="main-container" class="flex-1 overflow-y-auto p-4 pb-24 relative">
 
         <div id="view-dashboard" class="space-y-4">
             <div class="grid grid-cols-2 gap-3">
-                <div class="card p-4">
+                <div class="card p-4 border-l-4 border-[#C9A66B]">
                     <p class="text-xs uppercase text-gray-400 font-bold">Total Sales</p>
-                    <h3 class="text-xl font-bold text-[#C9A66B]" id="kpi-sales">Rs. 0</h3>
+                    <h3 class="text-xl font-bold text-[#5D4037]" id="kpi-sales">Rs. 0</h3>
                 </div>
-                <div class="card p-4">
+                <div class="card p-4 border-l-4 border-green-600">
                     <p class="text-xs uppercase text-gray-400 font-bold">Net Profit</p>
                     <h3 class="text-xl font-bold text-green-600" id="kpi-profit">Rs. 0</h3>
                 </div>
             </div>
             
             <div class="card p-4">
-                <h3 class="text-sm font-bold mb-4">Items Sold by Dress</h3>
-                <canvas id="chart-items"></canvas>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-bold uppercase text-gray-500">Items Sold by Dress</h3>
+                </div>
+                <canvas id="chart-items" height="200"></canvas>
             </div>
             
-            <button onclick="document.getElementById('expense-modal').classList.remove('hidden')" class="w-full btn-dark py-3 shadow">
-                + Add Expense
+            <button onclick="document.getElementById('expense-modal').classList.remove('hidden')" class="w-full btn-dark py-3 shadow-md flex justify-center items-center gap-2">
+                <i class="fa-solid fa-receipt"></i> Add Expense
             </button>
         </div>
 
         <div id="view-new" class="hidden space-y-4">
             
             <div class="flex justify-end">
-                <button onclick="openSettings()" class="text-xs font-bold text-[#5D4037] bg-white border border-[#C9A66B] px-3 py-1 rounded-full">
-                    <i class="fa-solid fa-cog"></i> Price Settings
+                <button onclick="openSettings()" class="text-xs font-bold text-[#5D4037] bg-white border border-[#C9A66B] px-3 py-1.5 rounded-full shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-tags"></i> Manage Prices
                 </button>
             </div>
 
-            <div class="card p-5 border-t-4 border-[#C9A66B]">
-                <h2 class="text-lg font-bold mb-4">New Order</h2>
+            <div class="card p-5 border-t-4 border-[#C9A66B] shadow-md">
+                <h2 class="text-lg font-serif font-bold mb-4 text-[#5D4037] border-b pb-2">Create New Order</h2>
+                
                 <form id="order-form" class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
-                        <input type="date" id="ord-date" class="w-full p-2 border rounded bg-[#F9F5EB]">
-                        <input type="text" id="ord-client" placeholder="Client Name" class="w-full p-2 border rounded bg-[#F9F5EB]">
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-gray-400">Date</label>
+                            <input type="date" id="ord-date" class="w-full p-2.5 border rounded-lg text-sm bg-[#F9F5EB] focus:outline-none focus:border-[#C9A66B]">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-gray-400">Client</label>
+                            <input type="text" id="ord-client" placeholder="Client Name" class="w-full p-2.5 border rounded-lg text-sm bg-[#F9F5EB] focus:outline-none focus:border-[#C9A66B]">
+                        </div>
                     </div>
 
                     <div id="items-list" class="space-y-3">
                         </div>
                     
-                    <button type="button" onclick="addItemRow()" class="text-xs text-[#C9A66B] font-bold uppercase">+ Add Another Dress</button>
+                    <button type="button" onclick="addItemRow()" class="w-full py-2 border-2 border-dashed border-[#C9A66B]/50 text-[#C9A66B] font-bold text-xs rounded hover:bg-[#C9A66B]/10 transition">
+                        + ADD ANOTHER DRESS
+                    </button>
 
-                    <div class="pt-4 border-t">
-                        <div class="flex justify-between mb-2">
-                            <label class="font-bold">Total Amount</label>
-                            <span id="grand-total" class="font-bold">0</span>
+                    <div class="bg-[#F9F5EB] p-3 rounded-lg space-y-2 border border-[#E4DCCF]">
+                        <div class="flex justify-between items-center text-sm">
+                            <label class="font-bold text-gray-600">Total Amount</label>
+                            <span id="grand-total" class="font-bold text-[#5D4037] text-lg">0</span>
                         </div>
-                        <input type="number" id="ord-advance" placeholder="Advance Payment" class="w-full p-3 border rounded border-[#C9A66B]" oninput="calcTotals()">
-                        <div class="flex justify-between mt-2 text-sm font-bold text-gray-500">
-                            <span>Remaining:</span>
-                            <span id="ord-remaining" class="text-red-500">0</span>
+                        
+                        <div>
+                            <label class="text-[10px] font-bold uppercase text-gray-400">Advance Payment</label>
+                            <input type="number" id="ord-advance" placeholder="0" class="w-full p-2 border rounded border-[#C9A66B] font-mono" oninput="calcTotals()">
+                        </div>
+
+                        <div class="flex justify-between items-center text-sm pt-2 border-t border-gray-200">
+                            <span class="font-bold text-gray-500">Remaining Due</span>
+                            <span id="ord-remaining" class="font-bold text-red-500 text-lg">0</span>
                         </div>
                     </div>
 
-                    <button type="submit" id="btn-submit" class="w-full btn-primary py-4 shadow-lg">SUBMIT ORDER</button>
+                    <button type="submit" id="btn-submit" class="w-full btn-primary py-4 shadow-lg flex justify-center items-center gap-2">
+                        <span>SUBMIT ORDER</span>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
                 </form>
             </div>
         </div>
 
         <div id="view-list" class="hidden space-y-4">
-            <input type="text" id="search" placeholder="Search Client..." class="w-full p-3 rounded-full border shadow-sm mb-2" onkeyup="renderOrders()">
             
-            <div class="bg-white rounded-lg shadow overflow-x-auto">
+            <div class="relative">
+                <i class="fa-solid fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                <input type="text" id="search" placeholder="Search Client Name..." class="w-full pl-10 p-3 rounded-full border border-[#C9A66B]/30 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C9A66B]" onkeyup="renderOrders()">
+            </div>
+            
+            <div class="table-container bg-white shadow-sm">
                 <table class="excel-table">
                     <thead>
                         <tr>
@@ -105,6 +144,7 @@
                             <th>Date</th>
                             <th>Client</th>
                             <th>Dress</th>
+                            <th>Size</th>
                             <th>Due</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -118,96 +158,149 @@
 
     </div>
 
-    <div class="fixed bottom-0 w-full bg-white border-t flex justify-around py-3 pb-6 z-30 shadow-inner">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-active flex flex-col items-center">
-            <i class="fa-solid fa-chart-pie text-xl mb-1"></i><span class="text-[10px] font-bold">DASHBOARD</span>
+    <div class="fixed bottom-0 w-full bg-white border-t border-[#E4DCCF] flex justify-around py-2 pb-6 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-active flex flex-col items-center px-4 py-1">
+            <i class="fa-solid fa-chart-pie text-xl mb-1"></i>
+            <span class="text-[9px] font-bold tracking-wider">DASHBOARD</span>
         </button>
-        <button onclick="switchTab('new')" id="nav-new" class="text-gray-400 flex flex-col items-center">
-            <i class="fa-solid fa-circle-plus text-xl mb-1"></i><span class="text-[10px] font-bold">NEW ORDER</span>
+        <button onclick="switchTab('new')" id="nav-new" class="text-gray-400 flex flex-col items-center px-4 py-1">
+            <i class="fa-solid fa-circle-plus text-xl mb-1"></i>
+            <span class="text-[9px] font-bold tracking-wider">NEW ORDER</span>
         </button>
-        <button onclick="switchTab('list')" id="nav-list" class="text-gray-400 flex flex-col items-center">
-            <i class="fa-solid fa-list text-xl mb-1"></i><span class="text-[10px] font-bold">ORDERS</span>
+        <button onclick="switchTab('list')" id="nav-list" class="text-gray-400 flex flex-col items-center px-4 py-1">
+            <i class="fa-solid fa-list text-xl mb-1"></i>
+            <span class="text-[9px] font-bold tracking-wider">ORDERS</span>
         </button>
     </div>
 
-    <div id="expense-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl p-6">
-            <h3 class="font-bold mb-4">Add Expense</h3>
+    <div id="expense-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-xl p-6 shadow-2xl">
+            <h3 class="font-bold mb-4 text-lg text-[#5D4037]">Add New Expense</h3>
             <input type="date" id="exp-date" class="w-full mb-3 p-2 border rounded">
-            <input type="text" id="exp-desc" placeholder="Description" class="w-full mb-3 p-2 border rounded">
-            <input type="number" id="exp-amount" placeholder="Amount" class="w-full mb-4 p-2 border rounded">
+            <input type="text" id="exp-desc" placeholder="Description (e.g. Fabric)" class="w-full mb-3 p-2 border rounded">
+            <input type="number" id="exp-amount" placeholder="Amount (PKR)" class="w-full mb-4 p-2 border rounded">
             <div class="flex gap-2">
-                <button onclick="document.getElementById('expense-modal').classList.add('hidden')" class="w-1/2 py-2 border rounded">Cancel</button>
+                <button onclick="document.getElementById('expense-modal').classList.add('hidden')" class="w-1/2 py-2 border rounded font-bold text-gray-500">Cancel</button>
                 <button onclick="saveExpense()" class="w-1/2 btn-dark py-2">Save</button>
             </div>
         </div>
     </div>
 
-    <div id="settings-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl p-6 h-[70vh] flex flex-col">
-            <h3 class="font-bold mb-4">Dress Prices</h3>
-            <div id="settings-list" class="flex-1 overflow-y-auto space-y-2 mb-4"></div>
-            <button onclick="addSettingRow()" class="text-xs text-[#C9A66B] font-bold mb-4">+ Add Dress Type</button>
-            <div class="flex gap-2">
-                <button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="w-1/2 py-2 border rounded">Close</button>
-                <button onclick="saveSettings()" class="w-1/2 btn-dark py-2">Save Prices</button>
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-xl p-6 h-[70vh] flex flex-col shadow-2xl">
+            <h3 class="font-bold mb-4 text-lg text-[#5D4037]">Manage Dress Prices</h3>
+            
+            <div id="settings-list" class="flex-1 overflow-y-auto space-y-2 mb-4">
+                </div>
+            
+            <button onclick="addSettingRow()" class="text-xs text-[#C9A66B] font-bold mb-4 flex items-center gap-1">
+                <i class="fa-solid fa-plus"></i> Add New Dress Type
+            </button>
+            
+            <div class="flex gap-2 shrink-0">
+                <button onclick="document.getElementById('settings-modal').classList.add('hidden')" class="w-1/2 py-2 border rounded font-bold text-gray-500">Close</button>
+                <button onclick="saveSettings()" class="w-1/2 btn-dark py-2">Save All</button>
             </div>
         </div>
     </div>
 
-    <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-xl p-6 overflow-y-auto max-h-[80vh]">
-            <h3 class="font-bold mb-4 flex justify-between">
-                <span>Edit Order</span>
-                <span id="edit-id-disp" class="text-xs text-gray-400"></span>
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-xl p-6 overflow-y-auto max-h-[90vh] shadow-2xl">
+            <h3 class="font-bold mb-4 flex justify-between items-center text-[#5D4037]">
+                <span>Edit Order Details</span>
+                <span id="edit-id-disp" class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded"></span>
             </h3>
+            
             <input type="hidden" id="edit-id">
             <input type="hidden" id="edit-old-dress">
             
-            <div class="space-y-3 text-sm">
-                <div><label class="font-bold text-xs text-gray-400">Date</label><input id="edit-date" type="date" class="w-full p-2 border rounded"></div>
-                <div><label class="font-bold text-xs text-gray-400">Client</label><input id="edit-client" type="text" class="w-full p-2 border rounded"></div>
-                <div><label class="font-bold text-xs text-gray-400">Dress</label>
-                    <select id="edit-dress" class="w-full p-2 border rounded"></select>
+            <form id="edit-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="font-bold text-[10px] uppercase text-gray-400">Date</label>
+                        <input id="edit-date" type="date" class="w-full p-2 border rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="font-bold text-[10px] uppercase text-gray-400">Client</label>
+                        <input id="edit-client" type="text" class="w-full p-2 border rounded text-sm">
+                    </div>
                 </div>
-                <div><label class="font-bold text-xs text-gray-400">Status</label>
-                    <select id="edit-status" class="w-full p-2 border rounded">
-                        <option>Pending</option><option>Production</option><option>Delivered</option><option>Cancelled</option>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="font-bold text-[10px] uppercase text-gray-400">Dress</label>
+                        <select id="edit-dress" class="w-full p-2 border rounded text-sm bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-[10px] uppercase text-gray-400">Size</label>
+                        <select id="edit-size" class="w-full p-2 border rounded text-sm bg-white">
+                            <option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>Custom</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="font-bold text-[10px] uppercase text-gray-400">Status</label>
+                    <select id="edit-status" class="w-full p-2 border rounded text-sm bg-white">
+                        <option>Pending</option>
+                        <option>Production</option>
+                        <option>Delivered</option>
+                        <option>Cancelled</option>
                     </select>
                 </div>
+
                 <div class="grid grid-cols-3 gap-2">
-                    <div><label class="font-bold text-xs text-gray-400">Price</label><input id="edit-price" oninput="calcEdit()" type="number" class="w-full p-2 border rounded"></div>
-                    <div><label class="font-bold text-xs text-gray-400">Qty</label><input id="edit-qty" oninput="calcEdit()" type="number" class="w-full p-2 border rounded"></div>
-                    <div><label class="font-bold text-xs text-gray-400">Advance</label><input id="edit-adv" oninput="calcEdit()" type="number" class="w-full p-2 border rounded"></div>
+                    <div>
+                        <label class="font-bold text-[10px] uppercase text-gray-400">Price</label>
+                        <input id="edit-price" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="font-bold text-[10px] uppercase text-gray-400">Qty</label>
+                        <input id="edit-qty" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="font-bold text-[10px] uppercase text-gray-400">Advance</label>
+                        <input id="edit-adv" oninput="calcEdit()" type="number" class="w-full p-2 border rounded text-sm">
+                    </div>
                 </div>
-                <div class="flex justify-between font-bold bg-gray-50 p-2 rounded">
-                    <span>Total: <span id="edit-total">0</span></span>
+
+                <div class="flex justify-between font-bold bg-gray-50 p-3 rounded text-sm border border-gray-100">
+                    <span class="text-gray-600">Total: <span id="edit-total">0</span></span>
                     <span class="text-red-500">Due: <span id="edit-due">0</span></span>
                 </div>
-            </div>
-            
-            <div class="flex gap-2 mt-4">
-                <button onclick="document.getElementById('edit-modal').classList.add('hidden')" class="w-1/2 py-2 border rounded">Cancel</button>
-                <button onclick="saveEdit()" class="w-1/2 btn-primary py-2">Update</button>
-            </div>
+
+                <div class="flex gap-2 mt-4 pt-2 border-t border-gray-100">
+                    <button type="button" onclick="document.getElementById('edit-modal').classList.add('hidden')" class="w-1/2 py-2.5 border rounded font-bold text-gray-500">Cancel</button>
+                    <button type="button" onclick="saveEdit()" class="w-1/2 btn-primary py-2.5">Update Order</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div id="toast" class="hidden fixed top-4 right-4 bg-green-800 text-white px-6 py-3 rounded shadow-xl z-50 flex items-center gap-3">
-        <i class="fa-solid fa-check-circle text-[#C9A66B]"></i><span id="toast-msg">Success</span>
+    <div id="toast" class="hidden fixed top-5 right-5 z-[60] bg-white border-l-4 border-green-500 shadow-xl rounded-r px-6 py-4 flex items-center gap-3 transition-transform transform translate-y-0">
+        <i class="fa-solid fa-circle-check text-green-500 text-xl"></i>
+        <div>
+            <h4 class="font-bold text-sm text-gray-800">Success!</h4>
+            <span id="toast-msg" class="text-xs text-gray-500">Operation completed</span>
+        </div>
     </div>
 
     <script>
-        // ⚠️ REPLACE THIS URL
+        // ==========================================
+        // ⚠️ PASTE YOUR GOOGLE WEB APP URL HERE
+        // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwfde7eBWLWjn9l93GpwrtoyHukR65GMejKiA_kSL2D0Erdz9zTnHU3M2lgeUwtrh0m/exec"; 
         
         let db = { orders: [], expenses: [], settings: [] };
         
-        // --- INIT ---
+        // --- INITIALIZATION ---
         window.onload = () => {
+            // Set Default Dates
             document.getElementById('ord-date').valueAsDate = new Date();
             document.getElementById('exp-date').valueAsDate = new Date();
-            addItemRow(); // Default one row
+            
+            // Start App
+            addItemRow(); // Add default empty row
             fetchData();
         };
 
@@ -220,121 +313,175 @@
                     renderDashboard();
                     renderOrders();
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("Sync Error", e); }
         }
 
         async function postData(payload) {
-            return fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(r => r.json());
+            return fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }).then(r => r.json());
         }
 
+        // --- NAVIGATION ---
         function switchTab(tab) {
             ['dashboard', 'new', 'list'].forEach(t => {
                 document.getElementById(`view-${t}`).classList.add('hidden');
-                document.getElementById(`nav-${t}`).classList.remove('nav-active', 'text-[#C9A66B]');
+                document.getElementById(`nav-${t}`).classList.remove('nav-active', 'text-[#5D4037]');
                 document.getElementById(`nav-${t}`).classList.add('text-gray-400');
             });
             document.getElementById(`view-${tab}`).classList.remove('hidden');
-            document.getElementById(`nav-${tab}`).classList.add('nav-active', 'text-[#C9A66B]');
+            document.getElementById(`nav-${tab}`).classList.add('nav-active', 'text-[#5D4037]');
             document.getElementById(`nav-${tab}`).classList.remove('text-gray-400');
-            if(tab==='list') renderOrders();
+            
+            if(tab === 'list') renderOrders();
         }
 
-        // --- NEW ORDER ---
+        // --- 1. NEW ORDER FUNCTIONALITY ---
         function addItemRow() {
-            // Populate dress dropdown from settings
-            let opts = '<option disabled selected>Select Dress</option>';
-            // Fallback if settings empty
-            const list = db.settings.length ? db.settings : [{ 'Dress Name':'Nur', Price:0 }, { 'Dress Name':'Mehr', Price:0 }];
-            list.forEach(s => opts += `<option value="${s['Dress Name']}">${s['Dress Name']}</option>`);
+            const container = document.getElementById('items-list');
+            
+            // Generate Dress Options from Settings
+            let options = '<option disabled selected>Select Dress</option>';
+            const list = db.settings.length ? db.settings : [{'Dress Name':'Nur', Price:0}]; // Fallback
+            list.forEach(s => options += `<option value="${s['Dress Name']}">${s['Dress Name']}</option>`);
 
             const html = `
-                <div class="item-row p-3 bg-gray-50 rounded border border-gray-200 relative">
-                    <button onclick="this.parentElement.remove(); calcTotals()" class="absolute top-1 right-1 text-red-400 text-xs"><i class="fa-solid fa-trash"></i></button>
-                    <div class="flex justify-between mb-2">
-                        <select class="w-2/3 p-2 border rounded bg-white item-dress" onchange="updateRowPrice(this)">${opts}</select>
-                        <input type="number" value="1" class="w-1/4 p-2 border rounded text-center item-qty" oninput="calcTotals()">
+                <div class="item-row p-3 bg-[#FAFAF9] rounded-lg border border-[#E5E7EB] relative transition-all hover:border-[#C9A66B]/30">
+                    <button onclick="this.parentElement.remove(); calcTotals()" class="absolute top-2 right-2 text-red-400 text-xs p-1 hover:text-red-600">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    
+                    <div class="flex gap-2 mb-2">
+                        <div class="w-1/2">
+                            <label class="text-[9px] font-bold uppercase text-gray-400">Dress</label>
+                            <select class="w-full p-2 border rounded bg-white text-xs item-dress focus:border-[#C9A66B] outline-none" onchange="updateRowPrice(this)">${options}</select>
+                        </div>
+                        <div class="w-1/4">
+                            <label class="text-[9px] font-bold uppercase text-gray-400">Size</label>
+                            <select class="w-full p-2 border rounded bg-white text-xs item-size focus:border-[#C9A66B] outline-none">
+                                <option>S</option><option>M</option><option>L</option><option>XL</option><option>Custom</option>
+                            </select>
+                        </div>
+                        <div class="w-1/4">
+                            <label class="text-[9px] font-bold uppercase text-gray-400">Qty</label>
+                            <input type="number" value="1" min="1" class="w-full p-2 border rounded text-center text-xs item-qty focus:border-[#C9A66B] outline-none" oninput="calcTotals()">
+                        </div>
                     </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-gray-400">Price: <span class="item-price">0</span></span>
-                        <span class="font-bold text-[#C9A66B]">Total: <span class="item-total">0</span></span>
+                    
+                    <div class="flex justify-between items-center text-xs bg-white p-2 rounded border border-gray-100">
+                        <span class="text-gray-400">Unit: <span class="item-price font-mono">0</span></span>
+                        <span class="font-bold text-[#5D4037]">Total: <span class="item-total font-mono text-sm">0</span></span>
                     </div>
                 </div>`;
-            document.getElementById('items-list').insertAdjacentHTML('beforeend', html);
+            container.insertAdjacentHTML('beforeend', html);
         }
 
-        function updateRowPrice(el) {
-            const dress = el.value;
+        function updateRowPrice(select) {
+            const dress = select.value;
             const setting = db.settings.find(s => s['Dress Name'] === dress);
-            el.closest('.item-row').querySelector('.item-price').innerText = setting ? setting.Price : 0;
+            const price = setting ? setting.Price : 0;
+            select.closest('.item-row').querySelector('.item-price').innerText = price;
             calcTotals();
         }
 
         function calcTotals() {
-            let g = 0;
-            document.querySelectorAll('.item-row').forEach(r => {
-                const p = parseFloat(r.querySelector('.item-price').innerText)||0;
-                const q = parseFloat(r.querySelector('.item-qty').value)||0;
-                const t = p*q;
-                r.querySelector('.item-total').innerText = t;
-                g += t;
+            let grand = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                const price = parseFloat(row.querySelector('.item-price').innerText) || 0;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const total = price * qty;
+                row.querySelector('.item-total').innerText = total;
+                grand += total;
             });
-            const adv = parseFloat(document.getElementById('ord-advance').value)||0;
-            document.getElementById('grand-total').innerText = g.toLocaleString();
-            document.getElementById('ord-remaining').innerText = (g - adv).toLocaleString();
+
+            const adv = parseFloat(document.getElementById('ord-advance').value) || 0;
+            document.getElementById('grand-total').innerText = grand.toLocaleString();
+            document.getElementById('ord-remaining').innerText = (grand - adv).toLocaleString();
         }
 
         document.getElementById('order-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
-            btn.innerHTML = 'Saving...'; btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; 
+            btn.disabled = true;
 
-            const grand = parseFloat(document.getElementById('grand-total').innerText.replace(/,/g,''));
-            const totalAdv = parseFloat(document.getElementById('ord-advance').value)||0;
-
+            const grand = parseFloat(document.getElementById('grand-total').innerText.replace(/,/g, ''));
+            const totalAdv = parseFloat(document.getElementById('ord-advance').value) || 0;
+            
             const items = [];
-            document.querySelectorAll('.item-row').forEach(r => {
-                const p = parseFloat(r.querySelector('.item-price').innerText);
-                const q = parseFloat(r.querySelector('.item-qty').value);
-                const t = parseFloat(r.querySelector('.item-total').innerText);
-                const itemAdv = (t/grand)*totalAdv; // Split advance
-                items.push({ dress: r.querySelector('.item-dress').value, unitPrice: p, qty: q, total: t, advance: itemAdv, remaining: t-itemAdv });
+            document.querySelectorAll('.item-row').forEach(row => {
+                const price = parseFloat(row.querySelector('.item-price').innerText);
+                const qty = parseFloat(row.querySelector('.item-qty').value);
+                const total = parseFloat(row.querySelector('.item-total').innerText);
+                
+                // Math: Split advance proportionally
+                const rowAdv = (total / grand) * totalAdv;
+                
+                items.push({
+                    dress: row.querySelector('.item-dress').value,
+                    size: row.querySelector('.item-size').value,
+                    unitPrice: price, 
+                    qty: qty, 
+                    total: total,
+                    advance: rowAdv, 
+                    remaining: total - rowAdv
+                });
             });
 
-            const res = await postData({
-                type: 'createOrder',
+            const payload = {
+                type: "createOrder",
                 date: document.getElementById('ord-date').value,
                 client: document.getElementById('ord-client').value,
                 items: items
-            });
+            };
 
-            if(res.status==='success') {
-                showToast("Saved: " + res.orderId);
-                e.target.reset(); document.getElementById('items-list').innerHTML=''; addItemRow();
+            const res = await postData(payload);
+            
+            if(res.status === "success") {
+                showToast("Order Saved: " + res.orderId);
+                e.target.reset();
+                document.getElementById('items-list').innerHTML = '';
+                addItemRow();
                 fetchData();
+            } else {
+                alert("Error: " + res.msg);
             }
-            btn.innerHTML = 'SUBMIT ORDER'; btn.disabled = false;
+            btn.innerHTML = '<span>SUBMIT ORDER</span> <i class="fa-solid fa-paper-plane"></i>';
+            btn.disabled = false;
         });
 
-        // --- MY ORDERS (TABLE) ---
+        // --- 2. ORDERS TABLE & EDIT ---
         function renderOrders() {
             const tbody = document.getElementById('orders-tbody');
-            const term = document.getElementById('search').value.toLowerCase();
+            const search = document.getElementById('search').value.toLowerCase();
             tbody.innerHTML = '';
-            
-            db.orders.filter(o => o['Client Name'].toLowerCase().includes(term)).reverse().forEach(o => {
+
+            const filtered = db.orders.filter(o => 
+                o['Client Name'].toLowerCase().includes(search) || 
+                o['Order ID'].toLowerCase().includes(search)
+            ).reverse();
+
+            filtered.forEach(o => {
                 const due = Math.round(o['Remaining Amount']);
-                const statusColor = o.Status==='Delivered'?'text-green-600':(o.Status==='Pending'?'text-yellow-600':'text-gray-600');
                 
+                // Status Badge Color Logic
+                let badgeClass = 'bg-gray-100 text-gray-600';
+                if(o.Status === 'Delivered') badgeClass = 'bg-green-100 text-green-700';
+                if(o.Status === 'Pending') badgeClass = 'bg-yellow-100 text-yellow-700';
+                if(o.Status === 'Cancelled') badgeClass = 'bg-red-100 text-red-700';
+
                 const tr = `
-                    <tr class="border-b">
-                        <td>${o['Order ID']}</td>
+                    <tr class="transition-colors hover:bg-gray-50">
+                        <td class="font-mono font-bold text-[#5D4037]">${o['Order ID']}</td>
                         <td>${new Date(o.Date).toLocaleDateString()}</td>
                         <td class="font-bold">${o['Client Name']}</td>
                         <td>${o['Dress Name']}</td>
-                        <td class="text-red-500 font-bold">${due}</td>
-                        <td class="${statusColor} text-[10px] uppercase font-bold">${o.Status}</td>
-                        <td>
-                            <button onclick='openEdit(${JSON.stringify(o)})' class="text-[#5D4037] bg-gray-100 px-2 py-1 rounded text-xs hover:bg-gray-200">
+                        <td class="text-center"><span class="bg-gray-100 px-1.5 py-0.5 rounded text-xs border border-gray-200">${o.Size || '-'}</span></td>
+                        <td class="font-mono font-bold ${due > 0 ? 'text-red-500' : 'text-green-500'}">${due}</td>
+                        <td class="text-center"><span class="${badgeClass} px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wide">${o.Status}</span></td>
+                        <td class="text-center">
+                            <button onclick='openEdit(${JSON.stringify(o)})' class="text-[#5D4037] hover:text-[#C9A66B] transition p-2 bg-gray-100 rounded-full hover:bg-white hover:shadow-sm">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
                         </td>
@@ -344,78 +491,87 @@
             });
         }
 
-        // --- EDIT ORDER ---
         function openEdit(o) {
             document.getElementById('edit-modal').classList.remove('hidden');
+            
+            // Set IDs
             document.getElementById('edit-id').value = o['Order ID'];
-            document.getElementById('edit-old-dress').value = o['Dress Name']; // Crucial for finding row
+            document.getElementById('edit-old-dress').value = o['Dress Name'];
             document.getElementById('edit-id-disp').innerText = o['Order ID'];
             
+            // Populate Fields
             document.getElementById('edit-date').value = new Date(o.Date).toISOString().split('T')[0];
             document.getElementById('edit-client').value = o['Client Name'];
             document.getElementById('edit-status').value = o.Status;
+            document.getElementById('edit-size').value = o.Size || 'S';
             document.getElementById('edit-price').value = o['Unit Price'];
             document.getElementById('edit-qty').value = o.Quantity;
             document.getElementById('edit-adv').value = o['Advance Payment'];
-            
-            // Populate dress options
+
+            // Populate Dress Dropdown
             const dSel = document.getElementById('edit-dress');
             dSel.innerHTML = '';
-            (db.settings.length ? db.settings : [{ 'Dress Name': o['Dress Name'] }]).forEach(s => {
+            (db.settings.length ? db.settings : [{'Dress Name': o['Dress Name']}]).forEach(s => {
                 dSel.innerHTML += `<option>${s['Dress Name']}</option>`;
             });
             dSel.value = o['Dress Name'];
-            
+
             calcEdit();
         }
 
         function calcEdit() {
-            const p = parseFloat(document.getElementById('edit-price').value)||0;
-            const q = parseFloat(document.getElementById('edit-qty').value)||0;
-            const a = parseFloat(document.getElementById('edit-adv').value)||0;
-            document.getElementById('edit-total').innerText = p*q;
-            document.getElementById('edit-due').innerText = (p*q)-a;
+            const p = parseFloat(document.getElementById('edit-price').value) || 0;
+            const q = parseFloat(document.getElementById('edit-qty').value) || 0;
+            const a = parseFloat(document.getElementById('edit-adv').value) || 0;
+            const t = p * q;
+            document.getElementById('edit-total').innerText = t;
+            document.getElementById('edit-due').innerText = t - a;
         }
 
         async function saveEdit() {
-            const res = await postData({
+            const payload = {
                 type: 'updateFull',
                 id: document.getElementById('edit-id').value,
                 oldDress: document.getElementById('edit-old-dress').value,
                 date: document.getElementById('edit-date').value,
                 client: document.getElementById('edit-client').value,
                 dress: document.getElementById('edit-dress').value,
+                size: document.getElementById('edit-size').value,
                 status: document.getElementById('edit-status').value,
                 price: document.getElementById('edit-price').value,
                 qty: document.getElementById('edit-qty').value,
                 total: document.getElementById('edit-total').innerText,
                 advance: document.getElementById('edit-adv').value,
                 remaining: document.getElementById('edit-due').innerText
-            });
+            };
+
+            const res = await postData(payload);
             if(res.status === 'success') {
-                showToast("Order Updated");
+                showToast("Order Updated Successfully");
                 document.getElementById('edit-modal').classList.add('hidden');
                 fetchData();
+            } else {
+                alert("Error: " + res.msg);
             }
         }
 
-        // --- SETTINGS (PRICES) ---
+        // --- SETTINGS & EXPENSES ---
         function openSettings() {
             document.getElementById('settings-modal').classList.remove('hidden');
-            const list = document.getElementById('settings-list');
-            list.innerHTML = '';
+            const container = document.getElementById('settings-list');
+            container.innerHTML = '';
             
-            // If empty, seed dummy
-            const data = db.settings.length ? db.settings : [{'Dress Name':'', Price:0, 'Profit Margin':0}];
-            data.forEach(s => addSettingRow(s['Dress Name'], s.Price, s['Profit Margin']));
+            const list = db.settings.length ? db.settings : [{'Dress Name':'', Price:0, 'Profit Margin':0}];
+            list.forEach(s => addSettingRow(s['Dress Name'], s.Price, s['Profit Margin']));
         }
 
-        function addSettingRow(name='', price='', profit='') {
+        function addSettingRow(n='', p='', m='') {
             const html = `
-                <div class="flex gap-2 items-center s-row">
-                    <input class="w-1/3 p-2 border rounded text-xs s-name" placeholder="Name" value="${name}">
-                    <input class="w-1/3 p-2 border rounded text-xs s-price" type="number" placeholder="Price" value="${price}">
-                    <input class="w-1/3 p-2 border rounded text-xs s-profit" type="number" placeholder="Profit" value="${profit}">
+                <div class="flex gap-2 items-center s-row bg-gray-50 p-2 rounded mb-2 border border-gray-100">
+                    <input class="w-1/3 p-2 border rounded text-xs s-name bg-white" placeholder="Name" value="${n}">
+                    <input class="w-1/3 p-2 border rounded text-xs s-price bg-white" type="number" placeholder="Price" value="${p}">
+                    <input class="w-1/3 p-2 border rounded text-xs s-profit bg-white" type="number" placeholder="Profit" value="${m}">
+                    <button onclick="this.parentElement.remove()" class="text-red-300 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
                 </div>`;
             document.getElementById('settings-list').insertAdjacentHTML('beforeend', html);
         }
@@ -424,49 +580,75 @@
             const rows = [];
             document.querySelectorAll('.s-row').forEach(r => {
                 const n = r.querySelector('.s-name').value;
-                if(n) rows.push([n, r.querySelector('.s-price').value, '', '', r.querySelector('.s-profit').value, '', '']);
+                if(n) rows.push([n, r.querySelector('.s-price').value, '','', r.querySelector('.s-profit').value, '','']);
             });
-            const res = await postData({ type: 'savePrices', rows: rows });
-            if(res.status==='success') {
-                showToast("Prices Saved");
-                document.getElementById('settings-modal').classList.add('hidden');
-                fetchData();
-            }
+            await postData({type:'savePrices', rows:rows});
+            showToast("Prices Saved");
+            document.getElementById('settings-modal').classList.add('hidden');
+            fetchData();
         }
 
-        // --- UTILS ---
-        function saveExpense() {
-            // ... (Same as v1.0 logic, omitted for brevity, add if needed)
+        async function saveExpense() {
+            const payload = {
+                type: "addExpense",
+                date: document.getElementById('exp-date').value,
+                desc: document.getElementById('exp-desc').value,
+                amount: document.getElementById('exp-amount').value
+            };
+            await postData(payload);
+            showToast("Expense Added");
             document.getElementById('expense-modal').classList.add('hidden');
+            fetchData();
         }
+
+        // --- DASHBOARD & UTILS ---
         function showToast(msg) {
             const t = document.getElementById('toast');
             document.getElementById('toast-msg').innerText = msg;
             t.classList.remove('hidden');
-            setTimeout(()=>t.classList.add('hidden'), 3000);
+            t.classList.remove('translate-y-0'); // Reset animation
+            
+            setTimeout(() => {
+                t.classList.add('translate-y-0');
+                setTimeout(() => t.classList.add('hidden'), 3000);
+            }, 100);
         }
-        // --- DASHBOARD (Basic) ---
+
         function renderDashboard() {
-            // Calc Metrics
+            // Metrics
             const sales = db.orders.reduce((s,o)=>s+(o['Total Amount']||0),0);
             const exps = db.expenses.reduce((s,e)=>s+(e.Amount||0),0);
             
-            // Calc Profit (Margin * Qty) - Expenses
+            // Profit Calc
             let gross = 0;
             db.orders.forEach(o => {
                 const s = db.settings.find(x => x['Dress Name'] === o['Dress Name']);
                 if(s) gross += (s['Profit Margin'] * o.Quantity);
             });
 
-            document.getElementById('kpi-sales').innerText = "Rs. "+sales.toLocaleString();
-            document.getElementById('kpi-profit').innerText = "Rs. "+(gross-exps).toLocaleString();
-            
+            document.getElementById('kpi-sales').innerText = "Rs. " + sales.toLocaleString();
+            document.getElementById('kpi-profit').innerText = "Rs. " + (gross - exps).toLocaleString();
+
             // Chart
             const counts = {};
-            db.orders.forEach(o => counts[o['Dress Name']] = (counts[o['Dress Name']]||0)+o.Quantity);
+            db.orders.forEach(o => counts[o['Dress Name']] = (counts[o['Dress Name']]||0) + o.Quantity);
+            
             new Chart(document.getElementById('chart-items'), {
                 type: 'bar',
-                data: { labels: Object.keys(counts), datasets: [{ label:'Units', data:Object.values(counts), backgroundColor:'#C9A66B' }] }
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        label: 'Units',
+                        data: Object.values(counts),
+                        backgroundColor: '#C9A66B',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
             });
         }
     </script>
