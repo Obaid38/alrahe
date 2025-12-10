@@ -34,11 +34,11 @@
 
         /* Invoice Container - Hidden by default, shown strictly for PDF generation */
         #invoice-container {
-            width: 595px;
-            background:white;
-            margin: 0 auto;
+            display: none; 
+            width: 595px; /* A4 Width */
+            background: white;
+            color: black;
         }
-
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -116,19 +116,13 @@
         display:none;
         position:fixed;
         inset:0;
-        background:white;
         width:100%;
         height:100%;
         overflow:auto;
+        background:white;
         z-index:999999;
-
-        display:flex;
-        justify-content:center;
-        align-items:flex-start;
-        padding-top:20px;
     ">
     </div>
-
 
 
     <div id="invoice-container">
