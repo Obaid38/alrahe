@@ -2,20 +2,21 @@
   "name": "Alrahe Order Manager",
   "short_name": "Alrahe",
   "description": "Fashion label order management system",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#FFFFFF",
   "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "logo-192.png",
+      "src": "image.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "logo-512.png",
+      "src": "image.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
